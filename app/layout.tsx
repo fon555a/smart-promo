@@ -5,7 +5,7 @@ import { ReactNode } from "react";
 
 const kanit = Kanit({ 
   subsets: ['thai'],
-  weight: "500"
+  weight: "400"
 })
 
 export const metadata: Metadata = {
