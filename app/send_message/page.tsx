@@ -103,16 +103,18 @@ const SendMessagePage = () => {
               if (!dateData.startDateAndTime) return toast.error("คุณยังไม่ได้ตั้งค่าเวลาเริ่มต้นการประกาศ");
               if (!dateData.endDateAndTime) return toast.error("คุณยังไม่ได้ตั้งค่าเวลาจบการประกาศ");
 
-              setStep(4)
 
               try {
                 await sendDataToServer()
                 toast.success("สำเร็จ!!!")
+                setStep(4)
 
               } catch (error) {
                 toast.error("เกิดข้อผิดพลาดในการส่งข้อมูล")
                 console.error(error)
+              } finally {
               }
+
 
             }}
 
