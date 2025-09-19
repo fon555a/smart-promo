@@ -1,0 +1,42 @@
+'use client'
+import Image from "next/image"
+import { useEffect, useState } from "react"
+import "dotenv/config"
+
+type Props = {
+  imagesList?: string[],
+  interval?: number
+}
+
+const backendURL = process.env.NEXT_PUBLIC_API_URL
+
+const ImagePage = ({ imagesList, interval = 3000 }: Props) => {
+  const [currentIndex, setCurrentIndex] = useState<number>(0)
+  useEffect(() => {
+    if (imagesList.length === 0) return;
+
+    const newId = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % imagesList.length)
+    }, interval)
+    return () => clearInterval(newId)
+  }, [imagesList])
+
+  return (
+    <div className="w-screen h-screen flex justify-center items-center bg-black">
+      {imagesList[currentIndex] ?
+        <Image
+          src={imagesList[currentIndex]}
+          alt="no image"
+          className="object-contain relative"
+          fill
+
+        />
+
+        :
+        <h1 className="text-white text-4xl font-bold">ยังไม่มีรูปภาพ</h1>
+      }
+
+    </div>
+  )
+}
+export default ImagePage

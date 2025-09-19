@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+
+    {
+      "name": "Debug Express TS",
+      "type": "node",
+      "request": "launch",
+      "runtimeArgs": ["-r", "ts-node/esm"],
+      "args": ["${workspaceFolder}backend/src/server.ts"],
+      "cwd": "${workspaceFolder}",
+      "protocol": "inspector",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true
+    }
+  ]
+}
