@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev", 
-    "build": "next build", 
-    "start": "next start", 
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
@@ -13,6 +13,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^7.3.2",
     "@mui/x-date-pickers": "^8.11.1",
+    "@xstate/react": "^6.0.0",
     "axios": "^1.12.1",
     "dayjs": "^1.11.18",
     "dayjs-plugin-utc": "^0.1.2",
@@ -22,6 +23,8 @@
     "mysql2": "^3.14.5",
     "next": "15.5.2",
     "react": "19.1.0",
+    "@react-spring/web": "^10.0.3",
+    "framer-motion": "^12.23.16",
     "node-record-lpcm16": "^1.0.1",
     "react-clock": "^6.0.0",
     "react-datepicker": "^8.7.0",

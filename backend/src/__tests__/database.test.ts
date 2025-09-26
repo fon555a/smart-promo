@@ -1,66 +1,56 @@
-import dayjs from "dayjs"
-import sequelize from "../database.ts"
-import { createAnnouncement } from "../services/announcementService.ts"
-// import expressApp from "../server.ts"
-import request from "supertest"
-import { start } from "repl"
-import { convertTextToSpeech } from "../services/ttsService.ts"
-import { generateText } from "../services/aiService.ts"
+import { Sequelize } from "sequelize";
 
+import AnnouncementOrderModel from "../models/AnnouncementOrder";
+import AnnouncementImageModel from "../models/AnnouncementImage";
+import { createTestDatabase } from "./setupTestDatabase";
+import { syncAllCurrentAnnouncement } from "../services/announcementService";
+import dayjs from "dayjs";
 
-// beforeAll(async () => {
-//     await sequelize.sync({force: false})
-// })
+let sequelize: Sequelize;
+let AnnouncementOrder: any;
+let AnnouncementImage: any;
 
-// afterAll(async () => {
-//     await sequelize.close()
-    
-// })
+beforeAll(async () => {
+    sequelize = await createTestDatabase();
 
-// test("ลองแปลงเสียง", async () => {
-//     const status = await convertTextToSpeech("")
-//     console.log("status:", status)
-//     expect(status).toBe(200)
-// })
+    // init models
+    AnnouncementOrder = AnnouncementOrderModel(sequelize);
+    AnnouncementImage = AnnouncementImageModel(sequelize, AnnouncementOrder);
 
-// describe("ลองประกาศ", () => {
-//     it("ผ่านเถอะขอร้อง", async () => {
-//         const response = await request(expressApp)
-//         .post("/api/announcements/add_announcement")
-//         .send({
-//             text: "wompwomp",
-//             imageFiles: [],
-//             settings: {
-//                 timeSetting: {
-//                     startTime: dayjs().toISOString(),
-//                     endTime: dayjs().toISOString()
-//                 }
-//             }
-//         })
-//         .set("Accept", "application/json")
+    // sync database
+    await sequelize.sync({ force: true });
+});
 
-//         expect(response.status).toBe(200)
+afterAll(async () => {
+    await sequelize.close();
+});
+
+test("สามารถสร้าง AnnouncementOrder และ AnnouncementImage ได้", async () => {
+
+});
+
+describe("database test", () => {
+    it("ลองสร้าง database", async () => {
+        await AnnouncementOrder.create({
+            messages: "ประกาศ test",
+            start_time: dayjs().add(20, "seconds"),
+        });
+
+        await AnnouncementOrder.create({
+            messages: "ประกาศ test",
+            start_time: dayjs().subtract(30, "seconds"),
+        });
+
         
-//     })
-// })
+        // const image = await AnnouncementImage.create({
+        //     image_path: "path/to/image.png",
+        //     order_id: order.id,
+        // });
 
-test("ลองใช้ ai", async () => {
-    await generateText("สวัสดีครับ")
-}, 50000)
+        // expect(image.order_id).toBe(order.id);
+    })
 
-// test("ลองเพิ่มข้อมูลใน database", async () => {
-//     const text = "wompwomp"
-//     const newOrder = await createAnnouncement({
-//         text: text,
-//         imageFiles: [],
-//         settings: {
-//             timeSetting: {
-//                 startTime: dayjs().toISOString(),
-//                 endTime: dayjs().toISOString()
-//             }
-//         }
-//     })
-
-//     expect(newOrder).toBeDefined()
-//     expect(newOrder.messages).toBe(text)
-// })
+    it("ลอง sync ข้อมูลการประกาศ", () => {
+        syncAllCurrentAnnouncement()
+    })
+})

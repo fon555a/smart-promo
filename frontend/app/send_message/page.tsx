@@ -1,19 +1,17 @@
 
 'use client'
-import { useState } from "react"
+import { useRef, useState } from "react"
 import SendMessage from "./components/SendMessage"
 import SendImages from "./components/SendImages"
 import SendSetting from "./components/SendSetting"
 import { PickerValue } from "@mui/x-date-pickers/internals"
-import { addAnnouncement } from "../actions/announcement"
 import Link from "next/link"
 import toast, { Toaster } from "react-hot-toast"
 import axios from "axios"
-import { tr, ur } from "zod/v4/locales"
+import dayjs, { Dayjs } from "dayjs"
 
 type DateData = {
   startDateAndTime: PickerValue | null,
-  endDateAndTime: PickerValue | null
 }
 
 
@@ -25,9 +23,10 @@ const SendMessagePage = () => {
   const [step, setStep] = useState(1)
 
   const [dateData, setDateData] = useState<DateData>({
-    startDateAndTime: null,
-    endDateAndTime: null
+    startDateAndTime: null
   })
+  
+  const startTimeRef = useRef<Dayjs>(null)
 
   const isSameImage = (image: File, targetImage: File) => {
     return image.name === targetImage.name && image.size === targetImage.size && image.lastModified === targetImage.lastModified
@@ -48,13 +47,14 @@ const SendMessagePage = () => {
     const formData = new FormData()
     selectedImages.forEach((image) => formData.append("images", image))
 
+    const startTime = startTimeRef.current.toISOString()
+    console.log("sent start time:", startTime)
     const messageData = {
       text: message,
 
       settings: {
         timeSetting: {
-          startDateAndTime: dateData.startDateAndTime?.toISOString(),
-          endDateAndTime: dateData.endDateAndTime?.toISOString()
+          startTime: startTime,
         }
       }
     }
@@ -129,7 +129,6 @@ const SendMessagePage = () => {
             onNext={async () => {
 
               if (!dateData.startDateAndTime) return toast.error("คุณยังไม่ได้ตั้งค่าเวลาเริ่มต้นการประกาศ");
-              if (!dateData.endDateAndTime) return toast.error("คุณยังไม่ได้ตั้งค่าเวลาจบการประกาศ");
 
 
               try {
@@ -148,8 +147,11 @@ const SendMessagePage = () => {
 
             dateData={dateData}
 
-            onStartDateChange={(date) => setDateData(prev => ({ ...prev, startDateAndTime: date }))}
-            onEndDateChange={(date) => setDateData(prev => ({ ...prev, endDateAndTime: date }))}
+            onStartDateChange={(date) => {
+              setDateData(prev => ({ ...prev, startDateAndTime: date }))
+              startTimeRef.current = date
+              console.log("Current date:", date, date.toISOString())
+            }}
           />
         )
       case 4:
@@ -183,8 +185,9 @@ const SendMessagePage = () => {
           :
           <div>
             {step === 3 &&
-              <div>
-                <h1 className="text-center text-4xl text-primary font-bold mb-2">ตั้งค่า</h1>
+              <div className="mb-2">
+                <h1 className="text-center text-4xl text-primary font-bold">ตั้งค่า</h1>
+                <p className="text-secondary text-center">ในการประกาศจะประกาศแค่สองครั้งเท่านั้น</p>
               </div>
             }
 

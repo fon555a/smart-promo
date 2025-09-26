@@ -10,6 +10,7 @@ export const convertTextToSpeech = async (text: string) => {
     const checkResult = convertText.safeParse(text)
     
     if (!checkResult.success) {
+        console.error("The type of the text must be a string.")
         return false
     }
     

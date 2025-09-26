@@ -18,7 +18,6 @@ export const initIo = (server: HttpServer) => {
 }
 
 export const getIo = () => {
-    console.log("IO:", io)
     if (!io) {
         throw new Error("Socket.IO not initialized")
     }

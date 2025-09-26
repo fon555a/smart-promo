@@ -8,5 +8,6 @@ export default {
   },
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1'       // แก้ปัญหา import path หลัง build
-  }
+  },
+  
 }

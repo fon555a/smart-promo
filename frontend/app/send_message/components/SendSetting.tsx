@@ -2,7 +2,6 @@
 
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { PickerValue } from '@mui/x-date-pickers/internals';
 import dayjs from 'dayjs';
 import utc from "dayjs/plugin/utc"
@@ -15,15 +14,13 @@ dayjs.extend(timezone)
 interface Props {
   onNext: () => void,
   onBack: () => void,
-  onEndDateChange: (date: PickerValue) => void,
   onStartDateChange: (date: PickerValue) => void,
   dateData: {
     startDateAndTime: PickerValue | null,
-    endDateAndTime: PickerValue | null
   }
 }
 
-const SendSetting = ({ onNext, onBack, onStartDateChange, onEndDateChange, dateData }: Props) => {
+const SendSetting = ({ onNext, onBack, onStartDateChange, dateData }: Props) => {
   return (
     <div>
 
@@ -40,34 +37,17 @@ const SendSetting = ({ onNext, onBack, onStartDateChange, onEndDateChange, dateD
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <MobileDateTimePicker
                 label="เลือกเวลาที่จะเริ่มประกาศ"
-                value={dateData.startDateAndTime ?
-                  dayjs.utc(dateData.startDateAndTime).tz("Asia/Bangkok")
-                  : dayjs.utc().tz("Asia/Bangkok")
-                }
+                value={dateData.startDateAndTime}
                 views={["year", "month", "day", "hours", "minutes", "seconds"]}
                 minutesStep={1}
                 
                 onChange={onStartDateChange}
-                defaultValue={dayjs.utc(dateData.startDateAndTime).tz("Asia/Bangkok")}
-                minDateTime={dayjs.utc().tz("Asia/Bangkok")}
+                // defaultValue={}
+                minDateTime={dayjs()}
                 ampm={false}
                 
               />
-            
-              <MobileDateTimePicker
-                label="เลือกเวลาที่จะหยุดประกาศ"
-                minDateTime={dateData.startDateAndTime || dayjs.utc().tz("Asia/Bangkok")}
-                value={dateData.endDateAndTime ?
-                  dayjs.utc(dateData.endDateAndTime).tz("Asia/Bangkok")
-                  : dayjs.utc().tz("Asia/Bangkok")
-                }
-                views={["year", "month", "day", "hours", "minutes", "seconds"]}
-                minutesStep={1}
-
-                defaultValue={dayjs()}
-                ampm={false}
-                onChange={onEndDateChange}
-              />
+ 
             </LocalizationProvider>
             {/* End DatePicker */}
           </div>

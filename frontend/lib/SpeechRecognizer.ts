@@ -62,7 +62,13 @@ export class SpeechRecognizer {
   public start() {
     if (!this.recognition) return;
     this.isListening = true;
-    this.recognition.start();
+
+
+    try {
+      this.recognition.start();
+    } catch (error) {
+      console.error("Speech error:", error)
+    }
   }
 
   public stop() {

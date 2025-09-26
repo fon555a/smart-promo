@@ -1,21 +1,16 @@
-import { DataTypes } from "sequelize"
-import sequelize from "../database"
+import { DataTypes, Sequelize } from "sequelize";
 
+export default (sequelize: Sequelize) => {
+    const AnnouncementOrder = sequelize.define("AnnouncementOrder", {
+        messages: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        start_time: {
+            type: DataTypes.DATE,
+            allowNull: false,
+        },
+    }, { tableName: "announcement_order" });
 
-
-const AnnouncementOrder = sequelize.define("AnnouncementOrder", {
-    messages: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    start_time: {
-        type: DataTypes.DATE,
-        allowNull: false
-    },
-    end_time: {
-        type: DataTypes.DATE,
-        allowNull: false
-    }
-}, {tableName: "announcement_order"}) as any
-
-export default AnnouncementOrder
+    return AnnouncementOrder;
+};

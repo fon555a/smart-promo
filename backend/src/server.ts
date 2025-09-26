@@ -5,14 +5,12 @@ import cors from "cors";
 import { createServer } from "http";
 import { initIo } from "./io";
 import announcementRoute from "./routes/announcementRoute";
-import assemblyaiRoute from "./routes/assemblyRoute";
-
-import { addSteamingConnection } from "./services/assemblyaiService";
 
 import "dotenv/config"
+import { syncAllCurrentAnnouncement } from "./services/announcementService";
 
 const routes = {
-    announcementRoute, assemblyaiRoute
+    announcementRoute
 };
 console.log("Routes:", routes)
 
@@ -25,7 +23,6 @@ expressApp.use(cors({ origin: process.env.FRONTEND_URL }))
 expressApp.use(express.json())
 // Routes
 expressApp.use("/api/announcements", routes.announcementRoute)
-expressApp.use("/api/assemblyai", routes.assemblyaiRoute)
 
 // --- Next.js setup ---
 expressApp.post("/api/send-message", (request: Request, response: Response) => {
@@ -52,6 +49,8 @@ io.on("connection", (socket) => {
 
 // expressApp.all(/^(?!\/api\/).*$/, (req, res) => handle(req, res));
 // expressApp.use((req, res) => handle(req, res))
+
+syncAllCurrentAnnouncement()
 
 server.listen(5000, () => {
     console.log("> 🚀 Server ready on http://localhost:5000")

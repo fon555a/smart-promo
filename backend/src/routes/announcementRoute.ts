@@ -1,7 +1,7 @@
 import type { Request, Response } from "express"
 
 import express from "express"
-import { addAnnouncement } from "../controllers/announcementController"
+import { addAnnouncement, askAnnouncement } from "../controllers/announcementController"
 import multer from "multer"
 import path from "path"
 
@@ -23,6 +23,8 @@ const upload = multer({ storage });
 router.use("/uploads", express.static(uploadPath))
 
 router.post("/add_announcement", upload.array("images"), addAnnouncement)
+
+router.post("/ask_announcement", askAnnouncement)
 
 router.get("/", (request: Request, response: Response) => {
     response.json({ message: "tesat25" })
