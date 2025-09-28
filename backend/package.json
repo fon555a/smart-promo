@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "cross-env NODE_ENV=production pm2 start dist/server.js --name smart-promo",
     "test": "jest",
-    "dev": "node -r ts-node/register src/server.ts"
+    "dev": "node -r ts-node/register src/server.ts",
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

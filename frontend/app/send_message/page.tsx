@@ -8,7 +8,7 @@ import { PickerValue } from "@mui/x-date-pickers/internals"
 import Link from "next/link"
 import toast, { Toaster } from "react-hot-toast"
 import axios from "axios"
-import dayjs, { Dayjs } from "dayjs"
+import { Dayjs } from "dayjs"
 
 type DateData = {
   startDateAndTime: PickerValue | null,

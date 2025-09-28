@@ -2,6 +2,32 @@
 export type TranscriptCallback = (text: string, isFinal: boolean) => void;
 export type InterimCallback = (text: string) => void;
 
+
+
+type SpeechRecognitionEvent = {
+  resultIndex: number,
+  results: {
+    length: number
+  }
+}
+
+type SpeechRecognition = {
+  lang: string,
+  continuous: boolean,
+  interimResults: boolean,
+  maxAlternatives: number,
+  onresult: (event: SpeechRecognitionEvent) => void,
+  onerror: (event: ErrorEvent) => void,
+  onend: () => void,
+  start: () => void,
+  stop: () => void
+}
+
+type Windows = {
+  SpeechRecognition: SpeechRecognition,
+  webkitSpeechRecognition: SpeechRecognition
+}
+
 export class SpeechRecognizer {
   private recognition: SpeechRecognition | null = null;
   private isListening = false;
@@ -12,6 +38,7 @@ export class SpeechRecognizer {
 
   constructor() {
     if (typeof window !== "undefined") {
+      
       const SpeechRecognition =
         (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -45,7 +72,7 @@ export class SpeechRecognizer {
         this.interimCallback?.(interimTranscript.trim());
       };
 
-      this.recognition.onerror = (event: any) => {
+      this.recognition.onerror = (event) => {
         console.error("SpeechRecognition error:", event.error);
       };
 

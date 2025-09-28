@@ -45,6 +45,14 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => {
         console.log("❌ User disconnected:", socket.id)
     })
+
+    socket.on("message", (data) => {
+        const parsed = typeof data === "string" ? JSON.parse(data) : data;
+        console.log("Message-data:", data)
+        // if (parsed.event === "distance-update") {
+        //     io.emit("distance-update", parsed.distance);
+        // }
+    });
 })
 
 // expressApp.all(/^(?!\/api\/).*$/, (req, res) => handle(req, res));

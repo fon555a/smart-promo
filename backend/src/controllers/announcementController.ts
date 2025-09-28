@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 
 import { generateText } from "../services/aiService";
 import { sentSpeechMessageToClient, SpeechConfig } from "./ttsController";
-import { AnnouncementData, removeCurrentAnnouncement, startAnnouncement } from "../services/announcementService";
+import { AnnouncementData, startAnnouncement } from "../services/announcementService";
 
 type AskAnnouncementData = {
     text: string

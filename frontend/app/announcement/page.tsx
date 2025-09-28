@@ -12,7 +12,6 @@ import SpeechComponent from "./components/SpeechComponent"
 import SpeechToTextComponent from "./components/SpeechToTextComponent"
 import axios from "axios"
 import ProcessingComponent from "./components/ProcessingComponent"
-import { createMachine } from "xstate"
 
 const FaceDetectorComponent = dynamic(
   () => import("./components/FaceDetectorComponent"),
@@ -59,6 +58,10 @@ const AnnouncementPage = () => {
 
     socket.on("remove-current-announcement", () => {
       setImagesList([])
+    })
+
+    socket.on("distance-update", (distance: string) => {
+      console.log("Distance update:", distance)
     })
 
     return socket
