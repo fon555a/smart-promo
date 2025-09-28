@@ -18,9 +18,9 @@ export const generateText = async (prompt: string, onMessageRender: (message: st
                 content: prompt
             }
         ],
-        temperature: 0.6,
-        max_tokens: 100,
-        top_p: 0.6,
+        // temperature: 0.6,
+        // max_tokens: 100,
+        // top_p: 0.6,
         stream: true
     };
 
