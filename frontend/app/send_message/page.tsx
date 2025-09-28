@@ -8,7 +8,7 @@ import { PickerValue } from "@mui/x-date-pickers/internals"
 import Link from "next/link"
 import toast, { Toaster } from "react-hot-toast"
 import axios from "axios"
-import { Dayjs } from "dayjs"
+import dayjs, { Dayjs } from "dayjs"
 
 type DateData = {
   startDateAndTime: PickerValue | null,
@@ -47,7 +47,7 @@ const SendMessagePage = () => {
     const formData = new FormData()
     selectedImages.forEach((image) => formData.append("images", image))
 
-    const startTime = startTimeRef.current.toISOString()
+    const startTime = startTimeRef.current && startTimeRef.current.toISOString() || dayjs()
     console.log("sent start time:", startTime)
     const messageData = {
       text: message,
@@ -128,7 +128,6 @@ const SendMessagePage = () => {
             onBack={() => setStep(2)}
             onNext={async () => {
 
-              if (!dateData.startDateAndTime) return toast.error("คุณยังไม่ได้ตั้งค่าเวลาเริ่มต้นการประกาศ");
 
 
               try {

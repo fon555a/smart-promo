@@ -3,9 +3,10 @@ import "dotenv/config"
 
 let socket: Socket | null
 
-const backendUrl = process.env.NEXT_PUBLIC_API_URL
+const backendUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL
 
 export const getSocket = () => {
+
     if (!socket) {
         socket = io(backendUrl)
     }

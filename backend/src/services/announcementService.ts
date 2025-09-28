@@ -98,7 +98,7 @@ const fireAnnouncement = (data: MaskedAnnouncementData) => {
 
     console.log("New Announcement:", data.text)
     // logger.debug("New announcement!!!", data.text)
-    // io.emit("add-announcement", data)
+    io.emit("add-announcement", data)
 }
 
 export const removeCurrentAnnouncement = () => {
@@ -106,7 +106,7 @@ export const removeCurrentAnnouncement = () => {
 
     console.log("Remove announcement!!")
     // logger.debug("Remove announcement!!")
-    // io.emit("remove-current-announcement")
+    io.emit("remove-current-announcement")
 }
 
 const startSchedule = (config: ScheduleSettings, onStart: () => void) => {

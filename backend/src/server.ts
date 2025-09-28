@@ -19,7 +19,11 @@ const server = createServer(expressApp)
 const io = initIo(server)
 
 // Middleware
-expressApp.use(cors({ origin: process.env.FRONTEND_URL }))
+expressApp.use(cors({ 
+    // origin: process.env.FRONTEND_URL,
+    origin: "*",
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+ }))
 expressApp.use(express.json())
 // Routes
 expressApp.use("/api/announcements", routes.announcementRoute)

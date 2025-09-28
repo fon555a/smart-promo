@@ -7,11 +7,11 @@ export const generateText = async (prompt: string, onMessageRender: (message: st
         "Content-Type": "application/json"
     };
     const payload = {
-        model: "deepseek/deepseek-chat-v3-0324",
+        model: "deepseek/deepseek-chat-v3.1:free",
         messages: [
             {
                 role: "system",
-                content: "คุณคือผู้ประกาศประชาสัมพันธ์ และคุณต้องตอบเป็นภาษาไทย ตอบแต่ข้อความภาษาไทยเท่านั้นไม่ต้องมีสัญลักษณ์พิเศษอื่นๆ"
+                content: "คุณคือผู้ประกาศประชาสัมพันธ์ และคุณต้องตอบเป็นภาษาไทย ตอบแต่ข้อความภาษาไทยเท่านั้นไม่ต้องมีสัญลักษณ์พิเศษอื่นๆ และตอบแค่ข้อมูลที่ได้รับมาเท่านั้น ถ้าข้อมูลนั้นว่างเปล่าบอกแค่ว่าไม่มี"
             },
             {
                 role: "user",

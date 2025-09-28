@@ -48,7 +48,7 @@ const uploadImage = async (orderId: number, imageFile: Express.Multer.File) => {
     return newImageData
 }
 
-const buildAnnouncementData = (orderData: OrderData, imagesData: ImageData[]): AnnouncementDatabaseData => {
+const buildData = (orderData: OrderData, imagesData: ImageData[]): AnnouncementDatabaseData => {
     const imagesPath = imagesData.map((image) => image.image_path)
 
     const data: AnnouncementDatabaseData = {
@@ -59,6 +59,45 @@ const buildAnnouncementData = (orderData: OrderData, imagesData: ImageData[]): A
     }
 
     return data
+}
+
+const buildDataFromOrderResults = async (orderResults: OrderData[]): Promise<AnnouncementDatabaseData[]> => {
+    const allAnnouncement: AnnouncementDatabaseData[] = []
+
+    for (const orderData of orderResults) {
+        const imagesData: ImageData[] = await AnnouncementImage.findAll({
+            where: {
+                order_id: orderData.id
+            }
+        }) as any
+
+        const buildedData = buildData(orderData, imagesData)
+        allAnnouncement.push(buildedData)
+    }
+
+    return allAnnouncement
+}
+
+export const getAllTodayAnnouncements = async () => {
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+
+    const results: OrderData[] = await AnnouncementOrder.findAll({
+        where: {
+            createdAt: {
+                [Op.gte]: startOfToday,
+                [Op.lte]: endOfToday,
+            }
+        }
+    }) as any;
+
+    const allAnnouncement: AnnouncementDatabaseData[] = await buildDataFromOrderResults(results)
+    return allAnnouncement
 }
 
 export const getAllCurrentAnnouncement = async (): Promise<AnnouncementDatabaseData[]> => {
@@ -80,19 +119,7 @@ export const getAllCurrentAnnouncement = async (): Promise<AnnouncementDatabaseD
         ]
     }) as any
 
-    const allAnnouncement: AnnouncementDatabaseData[] = []
-
-    for (const orderData of allOrderData) {
-        const imagesData: ImageData[] = await AnnouncementImage.findAll({
-            where: {
-                order_id: orderData.id
-            }
-        }) as any
-
-        const buildedData = buildAnnouncementData(orderData, imagesData)
-        allAnnouncement.push(buildedData)
-    }
-
+    const allAnnouncement: AnnouncementDatabaseData[] = await buildDataFromOrderResults(allOrderData)
 
     return allAnnouncement
 }

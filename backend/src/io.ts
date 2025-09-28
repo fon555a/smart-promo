@@ -6,7 +6,10 @@ let io: Server | null = null
 export const initIo = (server: HttpServer) => {
     io = new Server(server, {
         cors: {
-            origin: process.env.FRONTEND_URL,
+            origin: [
+                process.env.FRONTEND_URL as string,
+                "http://localhost:3000"
+            ],
             methods: ["GET", "POST"]
         },
         
