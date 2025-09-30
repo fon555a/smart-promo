@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react"
 import ImagePage from "./components/ImagePage"
 import { getSocket } from "../../lib/socket"
+import "dotenv/config"
 
 import dynamic from "next/dynamic";
 import ListeningComponent from "./components/ListeningComponent"
@@ -9,10 +10,8 @@ import ListeningComponent from "./components/ListeningComponent"
 import { SpeechRecognizer } from "../../lib/SpeechRecognizer"
 import SpeechComponent from "./components/SpeechComponent"
 import SpeechToTextComponent from "./components/SpeechToTextComponent"
+import axios from "axios"
 import ProcessingComponent from "./components/ProcessingComponent"
-
-import { useMachine } from "@xstate/react"
-import { speechMachine } from "./machines/speechMachine"
 
 const FaceDetectorComponent = dynamic(
   () => import("./components/FaceDetectorComponent"),
@@ -25,44 +24,30 @@ type MessageData = {
   text: string
 }
 
-const MAX_SPEECH_TIMEOUT = 3000
-
-const socketList = {
-  "add-announcement": "add-announcement",
-  "remove-current-announcement": "remove-current-announcement",
-  "distance-update": "distance-update"
-}
+const MAX_SPEECH_TIMEOUT = 5000
 
 const AnnouncementPage = () => {
-
+  
   const [showStartButton, setShowStartButton] = useState(true)
   const [imagesList, setImagesList] = useState<string[]>([])
+  const [speechMessage, setSpeechMessage] = useState<string>("")
+  const [isListening, setIsListening] = useState<boolean>(false)
+  const [isProcessing, setIsProcessing] = useState<boolean>(false)
+  const [isAnnounceing, setIsAnnouncing] = useState<boolean>(false)
+
   const speechRef = useRef<SpeechRecognizer | null>(null)
+  const speechMessageRef = useRef<string | null>(null)
+  const isListeningRef = useRef<boolean>(false)
   const stopSpeechTimeout = useRef<NodeJS.Timeout | null>(null)
+  const isProcessingRef = useRef<boolean>(false)
+  const isAnswerSpeakingRef = useRef<boolean>(false)
+  const isAnnouncementSpeakingRef = useRef<boolean>(false)
 
-  const [state, send] = useMachine(speechMachine)
-  const stateRef = useRef(state)
-
-  useEffect(() => {
-    stateRef.current = state
-    console.log("state:", stateRef.current.value)
-  }, [state])
-
-  const isStateMatch = (state: string) => {
-    if (stateRef.current.value === state) {
-      return true
-    }
-    return false
-  }
-
-  const getContext = (context: string) => {
-    return stateRef.current.context[context]
-  }
 
   const loadSocket = () => {
     const socket = getSocket()
 
-    socket.on(socketList["add-announcement"], async (messageData: MessageData) => {
+    socket.on("add-announcement", async (messageData: MessageData) => {
       console.log("new message:", messageData)
       const newImageList = messageData.imagesList.map((image) => {
         return process.env.NEXT_PUBLIC_API_URL + "/api/announcements" + image
@@ -71,11 +56,11 @@ const AnnouncementPage = () => {
       setImagesList(newImageList)
     })
 
-    socket.on(socketList["remove-current-announcement"], () => {
+    socket.on("remove-current-announcement", () => {
       setImagesList([])
     })
 
-    socket.on(socketList["distance-update"], (distance: string) => {
+    socket.on("distance-update", (distance: string) => {
       console.log("Distance update:", distance)
     })
 
@@ -85,62 +70,87 @@ const AnnouncementPage = () => {
   const clearStopSpeechTimeout = () => {
     if (stopSpeechTimeout.current) {
       clearTimeout(stopSpeechTimeout.current)
-      stopSpeechTimeout.current = null
-
     }
   }
 
   const handleFaceEnter = () => {
+    console.log("Face enter")
+    if (isListeningRef.current) return false
+    if (isProcessingRef.current) return false
+    if (isAnswerSpeakingRef.current) return false
+    if (isAnnouncementSpeakingRef.current) return false
 
-    send({ type: "FACE_ENTER" })
-    
-    if (isStateMatch("listening")) {
-      if (!speechRef.current?.isStarted()) {
-        speechRef.current?.start()
-      }
-
-      clearStopSpeechTimeout()
-      console.log("Face enter")
+    if (!speechRef.current?.isStarted()) {
+      speechRef.current?.start()
     }
+
+    console.log("Start listening!!")
+    isListeningRef.current = true
+    setIsListening(true)
+  }
+  const sentSpeechData = async (message: string) => {
+    try {
+      await axios.post(process.env.NEXT_PUBLIC_API_URL + "/api/announcements/ask_announcement", {
+        text: message
+      })
+    } catch (error) {
+      console.error("Error from sent speech data:", error)
+    }
+
   }
 
   const loadSpeechTimeout = () => {
-    console.log("Load timeout")
+    console.log("start time out!!")
     stopSpeechTimeout.current = setTimeout(() => {
-
-      if (isStateMatch("listening")) {
-        send({ type: "TIMEOUT" })
-        console.log("ListeningTimeout")
-      } else if (isStateMatch("userTalking")) {
-        send({ type: "SEND_SPEAK_DATA" })
-        console.log("Send speak data.")
-      }
+      console.log("Timeout start")
       speechRef.current?.stop()
 
-      send({ type: "RESET_MESSAGE" })
-      console.log("Timeout Started")
+      if (!isAnnouncementSpeakingRef.current) {
+        if (speechMessageRef.current !== "") {
+          isProcessingRef.current = true
+          setIsProcessing(true)
+          sentSpeechData(speechMessageRef.current)
+        }
+      }
+
+      speechMessageRef.current = ""
+      isListeningRef.current = false
+
+      setIsListening(false)
+      setSpeechMessage("")
+      console.log("stop time out!!")
     }, MAX_SPEECH_TIMEOUT);
   }
 
   const handleFaceLeave = () => {
-    if (!isStateMatch("listening")) {
-      return false
+
+    if (isProcessingRef.current) return false
+    if (isAnswerSpeakingRef.current) return false
+    if (isAnnouncementSpeakingRef.current) return false
+
+    if (!isListeningRef.current) {
+      resetStopSpeechTimeout()
     }
-    resetStopSpeechTimeout()
+
   }
 
   const resetStopSpeechTimeout = () => {
     clearStopSpeechTimeout()
     loadSpeechTimeout()
+    stopSpeechTimeout.current = null
   }
 
   const onTranscript = (text: string) => {
-    send({ type: "START_TALKING" })
-    if (!isStateMatch("userTalking")) return false
+    if (isProcessingRef.current) return false
+    if (isAnswerSpeakingRef.current) return false
+    if (isAnnouncementSpeakingRef.current) return false
 
-    send({ type: "SET_MESSAGE", text: text })
-    console.log("Current message:", text)
+    speechMessageRef.current = text
+
+    setSpeechMessage(speechMessageRef.current)
+    console.log("Current message:", speechMessageRef.current)
     resetStopSpeechTimeout()
+
   }
 
   const onSpeechRecognizerAdded = (speechObject: SpeechRecognizer) => {
@@ -151,10 +161,11 @@ const AnnouncementPage = () => {
     console.log("Speech success!!:", speechType)
     switch (speechType) {
       case "announcement":
-        send({ type: "ANNOUNCEMENT_SPEAK_SUCCESS" })
+        isAnnouncementSpeakingRef.current = false
         break
       case "answer":
-        send({ type: "ANSWER_SPEAK_SUCCESS" })
+        isAnswerSpeakingRef.current = false
+
         break
     }
   }
@@ -162,10 +173,12 @@ const AnnouncementPage = () => {
   const onSpeechMessageAdded = (messageType) => {
     switch (messageType) {
       case "announcement":
-        send({ type: "ANNOUNCEMENT" })
+        isAnnouncementSpeakingRef.current = true
         break
       case "answer":
-        send({ type: "PROCESSING_SUCCESS" })
+        isAnswerSpeakingRef.current = true
+        isProcessingRef.current = false
+        setIsProcessing(false)
         break
     }
   }
@@ -175,7 +188,9 @@ const AnnouncementPage = () => {
       case "announcement":
         return true
       case "answer":
-        if (isStateMatch("announcementSpeaking")) {
+        if (isAnnouncementSpeakingRef.current) {
+          isProcessingRef.current = false
+          setIsProcessing(false)
           return false
         }
         return true
@@ -189,16 +204,14 @@ const AnnouncementPage = () => {
     const socket = loadSocket()
 
     return () => {
-      Object.values(socketList).forEach((socketId) => socket.off(socketId))
-  
-  
+      socket.off("new-message")
+      socket.off("new-speech")
     }
   }, [])
 
 
   return (
     <>
-
       <SpeechToTextComponent
         onTranscript={onTranscript}
         onSpeechRecognizerAdded={onSpeechRecognizerAdded}
@@ -212,21 +225,22 @@ const AnnouncementPage = () => {
         onFaceEnter={handleFaceEnter}
         onFaceLeave={handleFaceLeave}
       />
-      {(state.matches("listening") || state.matches("userTalking")) &&
-        <ListeningComponent text={state.context.message} />
+      {isListening &&
+        <ListeningComponent text={speechMessage} />
+
       }
 
-      {(state.matches("processing") || state.matches("sending")) &&
+      {isProcessing &&
         <ProcessingComponent />
-      }
-      <h1 className="fixed z-3 bg-white">State: {state.value as string}</h1>
 
-      {/* <div className="fixed z-3 bg-white">
+      }
+
+      <div className="fixed z-3 bg-white">
         <button onClick={() => {
           isAnnouncementSpeakingRef.current = !isAnnouncementSpeakingRef.current
           setIsAnnouncing(isAnnouncementSpeakingRef.current)
         }}>Test Announcement {isAnnounceing ? "true" : "false"}</button>
-      </div> */}
+      </div>
       <div className="">
         {showStartButton &&
           <button onClick={() => setShowStartButton(false)} className="w-screen h-screen text-primary font-bold text-2xl bg-white text-center z-2 fixed cursor-pointer">กดเพื่อเริ่มต้นการใช้งาน</button>

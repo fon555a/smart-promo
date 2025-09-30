@@ -11,7 +11,18 @@ const ProcessingComponent = () => {
     <div>
       <div className="w-screen h-screen fixed justify-center">
         <div className="container-lg flex flex-col justify-center items-center gap-3 absolute bottom-0 left-0 right-0 mb-15">
-          <motion.div
+          <div className="bg-white border-3 border-primary flex flex-col justify-center text-center p-3 rounded-2xl">
+            <Image
+              src={"/icons/processingIcon.svg"}
+              alt="processing-icon"
+
+              width={150}
+              height={150}
+            />
+            <p className="text-primary text-2xl">กำลังประมวลผล</p>
+
+          </div>
+          {/* <motion.div
 
             className="bg-white border-3 border-primary flex flex-col justify-center text-center p-3 rounded-2xl"
             initial={{ y: 200 }}   // เริ่มจากข้างล่าง + จาง
@@ -34,7 +45,7 @@ const ProcessingComponent = () => {
               }}
             />
             <p className="text-primary text-2xl">กำลังประมวลผล</p>
-          </motion.div>
+          </motion.div> */}
 
 
         </div>
