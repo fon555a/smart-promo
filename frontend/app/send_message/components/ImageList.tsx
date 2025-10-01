@@ -37,7 +37,7 @@ const ImageList = ({ images, onSelectImages, onDeleteButtonClicked }: Props) => 
                     </div>
                 </div>
                 :
-                <div className="border-primary grid grid-cols-4 gap-2 border-3 rounded-md h-35 overflow-auto p-2">
+                <div className="border-primary grid grid-cols-[auto_auto_auto] sm:grid-cols-4 max-w-3sm mx-auto sm:gap-2 border-3 rounded-md h-35 overflow-auto p-2">
                     {images.map((image: File, index: number) => {
                         const previewImage = URL.createObjectURL(image)
                         return (

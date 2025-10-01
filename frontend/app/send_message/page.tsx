@@ -61,8 +61,11 @@ const SendMessagePage = () => {
 
     formData.append("data", JSON.stringify(messageData))
     console.log("MEssageData:", messageData)
+    const ip = window.location.hostname
+    
+    console.log("Host name:", ip)
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/announcements/add_announcement`
+      const url = `http://${ip}:${process.env.NEXT_PUBLIC_SERVER_PORT}/api/announcements/add_announcement`
       const response = await axios.post(url, formData, {
         headers: {
           "Content-Type": "multipart/form-data"

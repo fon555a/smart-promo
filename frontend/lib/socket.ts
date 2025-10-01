@@ -3,12 +3,12 @@ import "dotenv/config"
 
 let socket: Socket | null
 
-const backendUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL
+// const backendUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL
 
 export const getSocket = () => {
 
     if (!socket) {
-        socket = io(backendUrl)
+        socket = io("ws://localhost:5000")
     }
 
     return socket

@@ -10,12 +10,12 @@ export default function Home() {
           และเชื่อมต่อกับสิ่งประดิษฐ์โดยตรง
         </p>
       
-        <div className="flex justify-between items-center px-[8rem]">
+        <div className="flex justify-between items-center px-3 sm:px-[8rem]">
           <div className="flex-row">
             <h3 className="font-bold text-2xl text-primary">ฟีเจอร์</h3>
             <div className="flex-row">
-              <div className="flex flex-row rounded-lg border-[#0089D3] border-3">
-                <div className="image bg-[#0089D3] w-[94px] h-[94px] flex justify-center items-center">
+              <div className="flex  flex-row rounded-lg border-[#0089D3] border-3">
+                <div className="image bg-[#0089D3] w-[94px] h-[94px] flex flex-none justify-center items-center">
                   <Image
                   src={"/megaphone.png"}
                   alt="logo"

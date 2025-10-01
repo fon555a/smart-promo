@@ -14,6 +14,9 @@ import ProcessingComponent from "./components/ProcessingComponent"
 import { useMachine } from "@xstate/react"
 import { speechMachine } from "./machines/speechMachine"
 
+import "dotenv/config"
+import QRCodeComponent from "./components/QRCodeComponent";
+
 const FaceDetectorComponent = dynamic(
   () => import("./components/FaceDetectorComponent"),
   { ssr: false }
@@ -30,13 +33,16 @@ const MAX_SPEECH_TIMEOUT = 3000
 const socketList = {
   "add-announcement": "add-announcement",
   "remove-current-announcement": "remove-current-announcement",
-  "distance-update": "distance-update"
+  "distance-update": "distance-update",
+  "load-server-ip": "load-server-ip"
 }
 
 const AnnouncementPage = () => {
 
   const [showStartButton, setShowStartButton] = useState(true)
   const [imagesList, setImagesList] = useState<string[]>([])
+  const [qrcodeLink, setQrcodeLink] = useState<string>(null)
+
   const speechRef = useRef<SpeechRecognizer | null>(null)
   const stopSpeechTimeout = useRef<NodeJS.Timeout | null>(null)
 
@@ -62,6 +68,12 @@ const AnnouncementPage = () => {
   const loadSocket = () => {
     const socket = getSocket()
 
+    socket.on(socketList["load-server-ip"], (serverIp: string) => {
+      const url = `http://${serverIp}:${process.env.NEXT_PUBLIC_CLIENT_PORT}`
+      setQrcodeLink(url)
+      console.log("Url:", url)
+    })
+
     socket.on(socketList["add-announcement"], async (messageData: MessageData) => {
       console.log("new message:", messageData)
       const newImageList = messageData.imagesList.map((image) => {
@@ -73,6 +85,7 @@ const AnnouncementPage = () => {
 
     socket.on(socketList["remove-current-announcement"], () => {
       setImagesList([])
+      send({ type: "ANNOUNCEMENT_SPEAK_SUCCESS" })
     })
 
     socket.on(socketList["distance-update"], (distance: string) => {
@@ -93,7 +106,7 @@ const AnnouncementPage = () => {
   const handleFaceEnter = () => {
 
     send({ type: "FACE_ENTER" })
-    
+
     if (isStateMatch("listening")) {
       if (!speechRef.current?.isStarted()) {
         speechRef.current?.start()
@@ -150,9 +163,6 @@ const AnnouncementPage = () => {
   const onSpeechSuccess = (speechType) => {
     console.log("Speech success!!:", speechType)
     switch (speechType) {
-      case "announcement":
-        send({ type: "ANNOUNCEMENT_SPEAK_SUCCESS" })
-        break
       case "answer":
         send({ type: "ANSWER_SPEAK_SUCCESS" })
         break
@@ -190,8 +200,8 @@ const AnnouncementPage = () => {
 
     return () => {
       Object.values(socketList).forEach((socketId) => socket.off(socketId))
-  
-  
+
+
     }
   }, [])
 
@@ -229,11 +239,15 @@ const AnnouncementPage = () => {
       </div> */}
       <div className="">
         {showStartButton &&
-          <button onClick={() => setShowStartButton(false)} className="w-screen h-screen text-primary font-bold text-2xl bg-white text-center z-2 fixed cursor-pointer">กดเพื่อเริ่มต้นการใช้งาน</button>
+          <button onClick={() => setShowStartButton(false)} className="w-screen h-screen text-primary font-bold text-2xl bg-white text-center z-3 fixed cursor-pointer">กดเพื่อเริ่มต้นการใช้งาน</button>
         }
         <ImagePage imagesList={imagesList} />
 
       </div>
+      {(!state.matches("announcementSpeaking") && qrcodeLink) &&
+        <QRCodeComponent url={qrcodeLink} />
+
+      }
     </>
 
   )
