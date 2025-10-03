@@ -71,6 +71,7 @@ const AnnouncementPage = () => {
     socket.on(socketList["load-server-ip"], (serverIp: string) => {
       const url = `http://${serverIp}:${process.env.NEXT_PUBLIC_CLIENT_PORT}`
       setQrcodeLink(url)
+      send({ type: "SET_SERVERURL", url: serverIp })
       console.log("Url:", url)
     })
 

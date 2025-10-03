@@ -3,8 +3,11 @@ import { assign, createMachine, fromPromise } from "xstate";
 import "dotenv/config"
 
 
-const sendMessageToServer = async (message: string) => {
-    await axios.post(process.env.NEXT_PUBLIC_API_URL + "/api/announcements/ask_announcement", {
+const sendMessageToServer = async (message: string, serverUrl: string) => {
+    const url = `http://${serverUrl}:${process.env.NEXT_PUBLIC_SERVER_PORT}` + "/api/announcements/ask_announcement"
+    
+    console.log("Url:", url)
+    await axios.post(url, {
         text: message
     })
 }
@@ -18,10 +21,16 @@ export const speechMachine = createMachine({
             actions: assign({
                 message: ""
             })
+        },
+        SET_SERVERURL: {
+            actions: assign({
+                serverUrl: ({ event }) => event.url
+            })
         }
     },
     context: {
-        message: ""
+        message: "",
+        serverUrl: ""
     },
     states: {
         idle: {
@@ -56,8 +65,11 @@ export const speechMachine = createMachine({
             invoke: {
 
                 // src: fromPromise(async ({ input }) => true),
-                src: fromPromise(async ({ input }) => sendMessageToServer(input.message)),
-                input: (event) => ({ message: event.context.message }),
+                src: fromPromise(async ({ input }) => sendMessageToServer(input.message, input.serverUrl)),
+                input: (event) => ({
+                    message: event.context.message,
+                    serverUrl: event.context.serverUrl
+                }),
                 onDone: { target: "processing" },
                 onError: {
                     target: "idle",
