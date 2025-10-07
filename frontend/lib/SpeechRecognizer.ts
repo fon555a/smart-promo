@@ -33,6 +33,7 @@ export class SpeechRecognizer {
   private isListening = false;
   private callback: TranscriptCallback | null = null;
   private interimCallback: InterimCallback | null = null;
+  private loopStartTimeout: NodeJS.Timeout = null
 
   private buffer = ""; // เก็บข้อความทั้งหมดตั้งแต่เริ่มฟัง
 
@@ -76,9 +77,9 @@ export class SpeechRecognizer {
         console.error("SpeechRecognition error:", event.error);
       };
 
-      this.recognition.onend = () => {
-        if (this.isListening) this.recognition?.start(); // auto restart
-      };
+      // this.recognition.onend = () => {
+      //   if (this.isListening) this.recognition?.start(); // auto restart
+      // };
     }
   }
 
@@ -86,8 +87,25 @@ export class SpeechRecognizer {
     return this.isListening;
   }
 
+  private startLoopTimeout() {
+    this.stopLoopTimeout()
+    this.loopStartTimeout = setTimeout(() => {
+      this.start()
+    }, 5000)
+  }
+  
+  private stopLoopTimeout() {
+    if (this.loopStartTimeout) {
+      clearTimeout(this.loopStartTimeout)
+      this.loopStartTimeout = null
+    }
+  }
+
   public start() {
     if (!this.recognition) return;
+    if (!this.loopStartTimeout) {
+      this.startLoopTimeout()
+    }
     this.isListening = true;
 
 
@@ -102,6 +120,7 @@ export class SpeechRecognizer {
     if (!this.recognition) return;
     this.isListening = false;
     this.recognition.stop();
+    this.stopLoopTimeout()
 
     // ส่ง callback สุดท้ายเป็น final
     if (this.buffer) {
