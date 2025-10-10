@@ -15,11 +15,14 @@ import { syncAllCurrentAnnouncement } from "./services/announcementService";
 const routes = {
     announcementRoute, esp32Route
 };
-console.log("Routes:", routes)
 
 const expressApp = express()
 const server = createServer(expressApp)
 const io = initIo(server)
+
+const ASSEMBLYAI_KEY = process.env.ASSEMBLYAI_API_KEY as string
+
+console.log("ASSEMBLY API KEY:", ASSEMBLYAI_KEY)
 
 // Middleware
 expressApp.use(cors({
@@ -35,7 +38,6 @@ expressApp.use("/api/announcements", routes.announcementRoute)
 // --- Next.js setup ---
 expressApp.post("/api/send-message", (request: Request, response: Response) => {
     const message = request.body
-    console.log("Message:", message)
     // handleSendMessage(message)
     response.status(200).json({ success: true })
 })
@@ -57,36 +59,21 @@ function getLocalIP() {
 }
 
 // --- Socket.IO setup ---
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
     console.log("✅ User connected:", socket.id)
-
-    // addSteamingConnection(socket, (text: string) => {
-    //     console.log("Full text:", text)
-    // })
     const serverIp = getLocalIP()
     socket.emit("load-server-ip", serverIp)
 
-    socket.on("disconnect", () => {
-        console.log("❌ User disconnected:", socket.id)
-    })
-
-    socket.on("message", (data) => {
-        const parsed = typeof data === "string" ? JSON.parse(data) : data;
-        console.log("Message-data:", data)
-        // if (parsed.event === "distance-update") {
-        //     io.emit("distance-update", parsed.distance);
-        // }
+    socket.on("disconnect", async () => {
+        console.log("Client disconnected:", socket.id);
     });
 })
 
-io.of('/esp').on('connection', (socket) => {
-    console.log("ESP32 connected to /esp");
-});
 
 // expressApp.all(/^(?!\/api\/).*$/, (req, res) => handle(req, res));
 // expressApp.use((req, res) => handle(req, res))
 
-syncAllCurrentAnnouncement()
+// syncAllCurrentAnnouncement()
 
 
 

@@ -36,7 +36,7 @@ export const askAnnouncement = async (request: Request, response: Response) => {
     const jsonData = JSON.stringify({
         "วันนี้": maskedData
     })
-    const prompt = data.text + "ข้อมูล: " + jsonData
+    const prompt = data.text + " ข้อมูล: " + jsonData
 
     console.log("Prompt:", prompt)
     await generateText(prompt, (renderedMessage: string) => {

@@ -80,8 +80,11 @@ const AnnouncementPage = () => {
       const newImageList = messageData.imagesList.map((image) => {
         return process.env.NEXT_PUBLIC_API_URL + "/api/announcements" + image
       })
-
+      
+      console.log("New image list:", newImageList)
       setImagesList(newImageList)
+      send({ type: "ANNOUNCEMENT" })
+      
     })
 
     socket.on(socketList["remove-current-announcement"], () => {
@@ -173,7 +176,6 @@ const AnnouncementPage = () => {
   const onSpeechMessageAdded = (messageType) => {
     switch (messageType) {
       case "announcement":
-        send({ type: "ANNOUNCEMENT" })
         break
       case "answer":
         send({ type: "PROCESSING_SUCCESS" })

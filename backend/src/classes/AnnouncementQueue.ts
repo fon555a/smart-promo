@@ -22,37 +22,17 @@ class Queue {
         this.endTime = config.endTime
     }
 
-    public setNewEndTime(endTime: number) {
-        this.endTime = endTime
-
-        if (this.isStarted) {
-            if (this.endTimeout) clearTimeout(this.endTimeout)
-
-            this.endTimeout = setTimeout(() => {
-                if (this.onEnd) {
-                    console.log("End sec:", this.endTime)
-                    this.onEnd()
-                }
-            }, endTime);
-        }
-    }
 
     public start() {
-        this.startAt = Date.now()
         this.isStarted = true
         this.endTimeout = setTimeout(() => {
             if (this.onEnd) {
                 console.log("End sec:", this.endTime)
-
                 this.onEnd()
 
             }
         }, this.endTime);
 
-    }
-
-    public getStartTime(): number | null {
-        return this.startAt
     }
 
     public destroy() {

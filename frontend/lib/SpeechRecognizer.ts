@@ -77,9 +77,9 @@ export class SpeechRecognizer {
         console.error("SpeechRecognition error:", event.error);
       };
 
-      // this.recognition.onend = () => {
-      //   if (this.isListening) this.recognition?.start(); // auto restart
-      // };
+      this.recognition.onend = () => {
+        if (this.isListening) this.recognition?.start(); // auto restart
+      };
     }
   }
 
@@ -103,9 +103,9 @@ export class SpeechRecognizer {
 
   public start() {
     if (!this.recognition) return;
-    if (!this.loopStartTimeout) {
-      this.startLoopTimeout()
-    }
+    // if (!this.loopStartTimeout) {
+    //   this.startLoopTimeout()
+    // }
     this.isListening = true;
 
 
@@ -120,7 +120,7 @@ export class SpeechRecognizer {
     if (!this.recognition) return;
     this.isListening = false;
     this.recognition.stop();
-    this.stopLoopTimeout()
+    // this.stopLoopTimeout()
 
     // ส่ง callback สุดท้ายเป็น final
     if (this.buffer) {

@@ -7,7 +7,7 @@ import { AnnouncementQueue } from "../classes/AnnouncementQueue"
 import Announcement from "../classes/Announcement"
 import winston from "winston";
 import { sentSpeechMessageToClient } from "../controllers/ttsController"
-import { MAX_ANNOUNCEMENT_TIMEOUT } from "../constants"
+import { MAX_ANNOUNCEMENT_TIMEOUT, MIN_ANNOUNCEMENT_TIMEOUT } from "../constants"
 
 const logger = winston.createLogger({
     level: "info",
@@ -149,7 +149,15 @@ const addAnnouncement = (data: MaskedAnnouncementData) => {
     }
     console.log("Masked announcementData:", data)
     startSchedule(config, () => {
-        queue.addQueue(newAnnouncement, MAX_ANNOUNCEMENT_TIMEOUT)
+        let endTime = 0
+        if (data.imagesList.length === 0) {
+            endTime = MIN_ANNOUNCEMENT_TIMEOUT
+        } else {
+            endTime = MAX_ANNOUNCEMENT_TIMEOUT
+        }
+        
+        console.log("End time:", endTime)
+        queue.addQueue(newAnnouncement, endTime)
     })
 }
 

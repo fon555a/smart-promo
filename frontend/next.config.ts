@@ -24,9 +24,13 @@ const nextConfig: NextConfig = {
         port: "5000",
         pathname: "/**"
       },
-      
+
     ]
-  }
+  },
+  // allowedDevOrigins: [
+  //   'local-origin.dev', '*.local-origin.dev',
+  //   'http://192.168.1.134:3000'
+  // ],
 };
 
 export default nextConfig;

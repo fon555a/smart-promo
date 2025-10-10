@@ -1,13 +1,16 @@
-import "dotenv/config"
+import "dotenv/config";
 
-export const generateText = async (prompt: string, onMessageRender: (message: string) => void) => {
+export const generateText = async (
+    prompt: string,
+    onMessageRender: (message: string) => void
+) => {
     const url = "https://openrouter.ai/api/v1/chat/completions";
     const headers = {
         "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json"
     };
     const payload = {
-        model: "deepseek/deepseek-chat-v3.1:free",
+        model: "anthropic/claude-3.5-haiku",
         messages: [
             {
                 role: "system",
@@ -18,10 +21,10 @@ export const generateText = async (prompt: string, onMessageRender: (message: st
                 content: prompt
             }
         ],
+        stream: true,
         // temperature: 0.6,
         // max_tokens: 100,
         // top_p: 0.6,
-        stream: true
     };
 
     const response = await fetch(url, {
@@ -29,6 +32,10 @@ export const generateText = async (prompt: string, onMessageRender: (message: st
         headers,
         body: JSON.stringify(payload)
     });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
     const reader = response.body?.getReader();
     if (!reader) {
@@ -38,9 +45,10 @@ export const generateText = async (prompt: string, onMessageRender: (message: st
     const decoder = new TextDecoder();
     let buffer = "";
     let sentenceBuffer = "";
+    let isDone = false;
 
     try {
-        while (true) {
+        while (!isDone) {
             const { done, value } = await reader.read();
             if (done) break;
             buffer += decoder.decode(value, { stream: true });
@@ -52,41 +60,46 @@ export const generateText = async (prompt: string, onMessageRender: (message: st
                 const line = buffer.slice(0, lineEnd).trim();
                 buffer = buffer.slice(lineEnd + 1);
 
-                if (line.startsWith("data: ")) {
-                    const data = line.slice(6);
-                    if (data === "[DONE]") break;
+                if (!line.startsWith("data: ")) continue;
+                const data = line.slice(6);
+                if (data === "[DONE]") {
+                    isDone = true;
+                    break;
+                }
 
-                    try {
-                        const parsed = JSON.parse(data);
-                        const content = parsed.choices[0].delta.content;
-                        if (content) {
-                            sentenceBuffer += content;
+                try {
+                    const parsed = JSON.parse(data);
+                    const content = parsed?.choices?.[0]?.delta?.content;
+                    if (!content) continue;
 
-                            // ตัดออกเป็นประโยคๆ
-                            const sentences = sentenceBuffer.split(/(?<=[.!?ฯ])\s*/);
+                    sentenceBuffer += content;
 
-                            // ประโยคสุดท้ายเก็บไว้ต่อ (เพราะอาจจะยังไม่จบจริงๆ)
-                            sentenceBuffer = sentences.pop() || "";
+                    // ตัดประโยค: ภาษาไทย + อังกฤษ
+                    const sentences = sentenceBuffer.split(/(?<=[.!?ฯๆ])\s+|(?<=(ครับ|ค่ะ|นะ|จ้า|เลย|แล้ว))/);
 
-                            // ส่งเฉพาะประโยคที่จบแล้ว
-                            for (const s of sentences) {
-                                if (s.trim().length > 0) {
-                                    onMessageRender(s.trim());
-                                }
-                            }
+                    // เอาประโยคสุดท้ายไว้ต่อ
+                    sentenceBuffer = sentences.pop() || "";
+
+                    for (const s of sentences) {
+                        if (s && s.trim()) {
+                            onMessageRender(s.trim());
                         }
-                    } catch {
-                        // ignore invalid JSON
                     }
+
+                } catch {
+                    // ignore invalid JSON
                 }
             }
         }
 
-        // เผื่อว่ามีเศษประโยคที่ไม่จบ แต่ยังเหลือ
-        if (sentenceBuffer.trim().length > 0) {
-            onMessageRender(sentenceBuffer.trim())
+        // ถ้ามีเศษประโยคเหลือ
+        if (sentenceBuffer.trim()) {
+            onMessageRender(sentenceBuffer.trim());
         }
+
     } finally {
-        reader.cancel();
+        try {
+            await reader.cancel();
+        } catch {}
     }
 };
