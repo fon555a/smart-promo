@@ -11,6 +11,7 @@ import os from "os"
 
 import "dotenv/config"
 import { syncAllCurrentAnnouncement } from "./services/announcementService";
+import getServerIp from "./lib/getServerIp";
 
 const routes = {
     announcementRoute, esp32Route
@@ -43,25 +44,11 @@ expressApp.post("/api/send-message", (request: Request, response: Response) => {
 })
 
 
-function getLocalIP() {
-    const nets = os.networkInterfaces();
-    for (const details of Object.values(nets)) {
-        if (details) {
-            for (const detail of details) {
-                if (detail.family === "IPv4" && !detail.internal) {
-                    return detail.address;
-                }
-            }
-        }
-
-    }
-    return "127.0.0.1";
-}
 
 // --- Socket.IO setup ---
 io.on("connection", async (socket) => {
     console.log("✅ User connected:", socket.id)
-    const serverIp = getLocalIP()
+    const serverIp = getServerIp()
     socket.emit("load-server-ip", serverIp)
 
     socket.on("disconnect", async () => {
@@ -79,7 +66,7 @@ io.on("connection", async (socket) => {
 
 server.listen(5000, () => {
     const address = server.address();
-    console.log("Server address:", getLocalIP());
+    console.log("Server address:", getServerIp());
     console.log("> 🚀 Server ready on http://localhost:5000")
 })
 // })

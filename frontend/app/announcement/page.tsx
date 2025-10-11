@@ -28,7 +28,7 @@ type MessageData = {
   text: string
 }
 
-const MAX_SPEECH_TIMEOUT = 3000
+const MAX_SPEECH_TIMEOUT = 1500
 
 const socketList = {
   "add-announcement": "add-announcement",

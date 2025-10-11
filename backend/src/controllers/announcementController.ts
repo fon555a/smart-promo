@@ -3,7 +3,7 @@ import type { Request, Response } from "express";
 import { generateText } from "../services/aiService";
 import { sentSpeechMessageToClient, SpeechConfig } from "./ttsController";
 import { AnnouncementData, startAnnouncement } from "../services/announcementService";
-import { getAllTodayAnnouncements } from "../services/announcementDatabaseService";
+import { getAllTodayAnnouncements, getStartedAnnouncementsData } from "../services/announcementDatabaseService";
 
 type AskAnnouncementData = {
     text: string
@@ -21,6 +21,11 @@ export const addAnnouncement = async (request: Request, response: Response) => {
     startAnnouncement(announcementData)
 
     response.status(200).json({ success: true })
+}
+
+export const getStartedAnnouncement = async (request: Request, response: Response) => {
+    const allAnnouncement = await getStartedAnnouncementsData()
+    response.status(200).json(allAnnouncement)
 }
 
 export const askAnnouncement = async (request: Request, response: Response) => {

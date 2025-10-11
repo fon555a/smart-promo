@@ -3,7 +3,7 @@ import AnnouncementOrderModel from "../models/AnnouncementOrder"
 import AnnouncementImageModel from "../models/AnnouncementImage"
 
 import dayjs from "dayjs"
-import { literal, Op } from "sequelize"
+import { literal, Op, Order } from "sequelize"
 import { MAX_ANNOUNCEMENT_TIMEOUT } from "../constants"
 import sequelize from "../database"
 
@@ -97,6 +97,21 @@ export const getAllTodayAnnouncements = async () => {
     }) as any;
 
     const allAnnouncement: AnnouncementDatabaseData[] = await buildDataFromOrderResults(results)
+    return allAnnouncement
+}
+
+export const getStartedAnnouncementsData = async () => {
+    const allOrderData: OrderData[] = await AnnouncementOrder.findAll({
+        where: {
+            start_time: {
+                [Op.lte]: new Date()
+            }
+        },
+        order: [['start_time', 'DESC']]
+
+    }) as any
+    const allAnnouncement: AnnouncementDatabaseData[] = await buildDataFromOrderResults(allOrderData)
+
     return allAnnouncement
 }
 
