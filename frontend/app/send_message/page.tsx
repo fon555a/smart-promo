@@ -201,6 +201,8 @@ const SendMessagePage = () => {
         </div>
 
       </div>
+      {/* back button */}
+      <Link href={"/"} className="fixed bottom-0 text-lg left-0 m-5 bg-primary text-white rounded-md px-2 py-1">กลับไปยังหน้าแรก</Link>
     </div>
   )
 }

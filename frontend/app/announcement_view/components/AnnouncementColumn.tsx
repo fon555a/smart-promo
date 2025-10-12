@@ -1,6 +1,7 @@
 'use client'
 
 import Image from "next/image"
+import ImageList from "../../../components/ImageList"
 
 interface Props {
     announcementAt: string,
@@ -18,24 +19,21 @@ const AnnouncementColumn = ({ announcementAt, imagesList, text }: Props) => {
     })
 
     return (
-        <div className="flex flex-col justify-between items-center border-primary border-2 px-5 py-2 rounded-md gap-5 sm:gap-23 sm:flex-row">
-            <div className="information">
+        <div className="flex flex-col justify-between items-center border-primary border-2 px-5 py-2 rounded-md gap-5 ">
+            <div className="information w-full">
                 <p className="text-secondary">ประกาศเมื่อ {announcementAt}</p>
-                <p className="text-secondary">{text}</p>
+                <p className=" text-xl text-primary">{text}</p>
             </div>
-            <div className="image">
+            <div className="image w-full">
                 {imagesList?.length === 0 ?
-                    <div className="flex justify-center items-center w-25 col aspect-[16/9]">
-                        <h1 className="text-secondary">ไม่มีรูปภาพ</h1>
+                    <div className="">
+                        <h1 className="text-secondary text-center">ไม่มีรูปภาพ</h1>
                     </div>
                     :
-                    <button className="relative overflow-hidden cursor-pointer group col relative w-25 aspect-[16/9] rounded border-primary border-2 flex justify-center items-center">
-                        {/* <img className="absolute inset-0 w-full h-full object-cover -z-10" src={previewImages[0]} alt="preview image" /> */}
-                        <div className="z-10">
-                            <p className="text-primary">{imagesList?.length} รูปภาพ</p>
-                            <p className="text-secondary">กดเพื่อดู</p>
-                        </div>
-                    </button>
+                    <div className=" h-50 relative border-2 border-primary rounded-md bg-black">
+                        <ImageList imagesList={previewImages} />
+                        <p className="absolute bottom-0 left-0 right-0 bg-gray-500/50 text-white text-center">กดเพื่อดู</p>
+                    </div>
                 }
             </div>
         </div>
