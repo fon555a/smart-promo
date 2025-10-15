@@ -32,9 +32,6 @@ const AnnouncementRow = () => {
     const getAnnouncementData = async (): Promise<AnnouncementData[] | false> => {
         const hostname = window.location.hostname
         console.log("Host name:", hostname)
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
-        const url = `${backendUrl}/api/announcements/get_started_announcements`
-
         try {
             const response = await fetch("/api/announcements/get_started_announcements", {
                 method: "post",
