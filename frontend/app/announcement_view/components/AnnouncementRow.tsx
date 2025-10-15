@@ -33,16 +33,10 @@ const AnnouncementRow = () => {
         const hostname = window.location.hostname
         console.log("Host name:", hostname)
         try {
-            const response = await fetch("/api/announcements/get_started_announcements", {
-                method: "post",
-                headers: { "Content-Type": "application/json" },
-            })
+
+            const response = await axios.post("/api/announcements/get_started_announcements")
             
-            if (!response.ok) {
-                console.error("Fetch error status:", response.status)
-                return false
-            }
-            const announcementData = await response.json()
+            const announcementData = response.data
 
             return announcementData
         } catch (error) {

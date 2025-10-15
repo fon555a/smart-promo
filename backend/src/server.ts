@@ -2,7 +2,14 @@
 import express, { type Request, type Response } from "express";
 import next from "next";
 
-import { createServer } from "http";
+
+import { /* `createServer` is a function imported from the "http" module in Node.js. It is used to
+create an HTTP server instance that can listen for incoming HTTP requests. In the provided
+code snippet, `createServer` is used to create an HTTPS server instance by passing in the
+necessary options such as the SSL key and certificate paths. This HTTPS server is then used
+with the Express application to handle incoming requests. */
+createServer } from "http"
+import fs from "fs"
 import { initIo } from "./io";
 import announcementRoute from "./routes/announcementRoute";
 import path from "path";
@@ -63,7 +70,7 @@ nextApp.prepare().then(() => {
 
 
     expressApp.use((req, res) => handle(req, res));
-    
+
     const serverPort = process.env.PORT
     server.listen(serverPort, () => {
         console.log("Server address:", getServerIp());
