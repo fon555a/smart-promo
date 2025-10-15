@@ -1,14 +1,11 @@
 'use client'
-import Image from "next/image"
 import { useEffect, useState } from "react"
-import "dotenv/config"
 
 type Props = {
   imagesList?: string[],
   interval?: number
 }
 
-const backendURL = process.env.NEXT_PUBLIC_API_URL
 
 const ImagePage = ({ imagesList, interval = 3000 }: Props) => {
   const [currentIndex, setCurrentIndex] = useState<number>(0)

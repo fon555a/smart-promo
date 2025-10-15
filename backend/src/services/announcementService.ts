@@ -206,7 +206,7 @@ export const syncAllCurrentAnnouncement = async () => {
         if (startTime.isAfter(now)) {
             handleStartTimeAfter(data)
         } else {
-            handleStartTimeBefore(data)
+            // handleStartTimeBefore(data)
         }
     }
 }

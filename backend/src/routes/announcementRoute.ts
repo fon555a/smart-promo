@@ -1,4 +1,5 @@
 import type { Request, Response } from "express"
+import fs from "fs"
 
 import express from "express"
 import { addAnnouncement, askAnnouncement, getStartedAnnouncement } from "../controllers/announcementController"
@@ -7,6 +8,12 @@ import path from "path"
 
 const router = express.Router()
 const uploadPath = path.join(__dirname, "../uploads");
+
+// ตรวจสอบว่าโฟลเดอร์ uploads มีอยู่หรือไม่ ถ้าไม่สร้าง
+if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+}
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, uploadPath); // เก็บไฟล์ที่ uploads/

@@ -10,10 +10,8 @@ interface Props {
 }
 
 const AnnouncementColumn = ({ announcementAt, imagesList, text }: Props) => {
-    const hostname = window.location.hostname
-    const backendPort = process.env.NEXT_PUBLIC_SERVER_PORT
-    const backendUrl = `http://${hostname}:${backendPort}`
-
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+    
     const previewImages = imagesList.map((image: string) => {
         return backendUrl + "/api/announcements" + image
     })

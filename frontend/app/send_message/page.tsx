@@ -9,6 +9,7 @@ import Link from "next/link"
 import toast, { Toaster } from "react-hot-toast"
 import axios from "axios"
 import dayjs, { Dayjs } from "dayjs"
+import compressImage from "../../lib/compressImage"
 
 type DateData = {
   startDateAndTime: PickerValue | null,
@@ -45,7 +46,16 @@ const SendMessagePage = () => {
   const sentDataToServer = async () => {
     console.log("Sent!!")
     const formData = new FormData()
-    selectedImages.forEach((image) => formData.append("images", image))
+
+    for (const image of selectedImages) {
+      console.log("Size before compress:", image.size)
+      const processedImage: Blob = await compressImage(image, {
+        quality: 0.6
+      })
+      console.log("Size after compress:", processedImage.size)
+      formData.append("images", processedImage, image.name)
+
+    }
 
     const startTime = startTimeRef.current && startTimeRef.current.toISOString() || dayjs()
     console.log("sent start time:", startTime)
@@ -61,11 +71,11 @@ const SendMessagePage = () => {
 
     formData.append("data", JSON.stringify(messageData))
     console.log("MEssageData:", messageData)
-    const ip = window.location.hostname
-    
-    console.log("Host name:", ip)
+
+
     try {
-      const url = `http://${ip}:${process.env.NEXT_PUBLIC_SERVER_PORT}/api/announcements/add_announcement`
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+      const url = `/api/announcements/add_announcement`
       const response = await axios.post(url, formData, {
         headers: {
           "Content-Type": "multipart/form-data"

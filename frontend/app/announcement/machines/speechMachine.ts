@@ -1,10 +1,9 @@
 import axios from "axios";
 import { assign, createMachine, fromPromise } from "xstate";
-import "dotenv/config"
-
 
 const sendMessageToServer = async (message: string, serverUrl: string) => {
-    const url = `http://${serverUrl}:${process.env.NEXT_PUBLIC_SERVER_PORT}` + "/api/announcements/ask_announcement"
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+    const url = backendUrl + "/api/announcements/ask_announcement"
     
     console.log("Url:", url)
     await axios.post(url, {

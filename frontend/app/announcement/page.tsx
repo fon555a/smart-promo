@@ -14,7 +14,6 @@ import ProcessingComponent from "./components/ProcessingComponent"
 import { useMachine } from "@xstate/react"
 import { speechMachine } from "./machines/speechMachine"
 
-import "dotenv/config"
 import QRCodeComponent from "./components/QRCodeComponent";
 
 const FaceDetectorComponent = dynamic(
@@ -65,26 +64,27 @@ const AnnouncementPage = () => {
     return stateRef.current.context[context]
   }
 
+  const loadQrCode = () => {
+    const url = process.env.NEXT_PUBLIC_DOMAIN_URL
+    setQrcodeLink(url)
+    send({ type: "SET_SERVERURL", url: url })
+    console.log("Url:", url)
+  }
+
   const loadSocket = () => {
     const socket = getSocket()
 
-    socket.on(socketList["load-server-ip"], (serverIp: string) => {
-      const url = `http://${serverIp}:${process.env.NEXT_PUBLIC_CLIENT_PORT}`
-      setQrcodeLink(url)
-      send({ type: "SET_SERVERURL", url: serverIp })
-      console.log("Url:", url)
-    })
+    loadQrCode()
 
     socket.on(socketList["add-announcement"], async (messageData: MessageData) => {
       console.log("new message:", messageData)
       const newImageList = messageData.imagesList.map((image) => {
-        return process.env.NEXT_PUBLIC_API_URL + "/api/announcements" + image
+        return process.env.NEXT_PUBLIC_DOMAIN_URL + "/api/announcements" + image
       })
-      
       console.log("New image list:", newImageList)
       setImagesList(newImageList)
       send({ type: "ANNOUNCEMENT" })
-      
+
     })
 
     socket.on(socketList["remove-current-announcement"], () => {
