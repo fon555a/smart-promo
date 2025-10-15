@@ -74,7 +74,6 @@ const SendMessagePage = () => {
 
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
       const url = `/api/announcements/add_announcement`
       const response = await axios.post(url, formData, {
         headers: {
