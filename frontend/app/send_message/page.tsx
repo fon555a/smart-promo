@@ -144,7 +144,14 @@ const SendMessagePage = () => {
 
 
               try {
-                await sentDataToServer()
+                const isSuccess = await sentDataToServer()
+
+                if (!isSuccess) {
+                  console.log("Sent message error!!")
+                  toast.error("ไม่สำเร็จ!!!")
+
+                  return false
+                }
                 toast.success("สำเร็จ!!!")
                 setStep(4)
 
