@@ -50,7 +50,7 @@ nextApp.prepare().then(() => {
     io.on("connection", async (socket) => {
         console.log("✅ User connected:", socket.id)
         const serverIp = getServerIp()
-        socket.emit("load-server-ip", serverIp)
+        socket.emit("socket-connected", serverIp)
 
         socket.on("disconnect", async () => {
             console.log("Client disconnected:", socket.id);

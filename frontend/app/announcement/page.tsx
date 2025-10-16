@@ -33,7 +33,8 @@ const socketList = {
   "add-announcement": "add-announcement",
   "remove-current-announcement": "remove-current-announcement",
   "distance-update": "distance-update",
-  "load-server-ip": "load-server-ip"
+  "load-server-ip": "load-server-ip",
+  "socket-connected": "socket-connected"
 }
 
 const AnnouncementPage = () => {
@@ -76,6 +77,10 @@ const AnnouncementPage = () => {
 
     loadQrCode()
 
+    socket.on(socketList["socket-connected"], () => {
+      console.log("Socket is connected!!!")
+    })
+
     socket.on(socketList["add-announcement"], async (messageData: MessageData) => {
       console.log("new message:", messageData)
       const newImageList = messageData.imagesList.map((image) => {
@@ -95,6 +100,8 @@ const AnnouncementPage = () => {
     socket.on(socketList["distance-update"], (distance: string) => {
       console.log("Distance update:", distance)
     })
+
+    
 
     return socket
   }
