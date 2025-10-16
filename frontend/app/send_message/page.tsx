@@ -26,7 +26,7 @@ const SendMessagePage = () => {
   const [dateData, setDateData] = useState<DateData>({
     startDateAndTime: null
   })
-  
+
   const startTimeRef = useRef<Dayjs>(null)
 
   const isSameImage = (image: File, targetImage: File) => {
@@ -81,12 +81,13 @@ const SendMessagePage = () => {
         }
       })
 
-      if (response.status === 200) {
-        console.log("✅ สำเร็จ", response.data);
-      } else {
+
+      if (response.status !== 200) {
         console.log("⚠️ มีบางอย่างผิดปกติ", response.status);
+        return false
       }
 
+      console.log("✅ สำเร็จ", response.data);
       return true
     } catch (error) {
       console.error(error)

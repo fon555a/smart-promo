@@ -9,7 +9,7 @@ const port = process.env.MYSQL_PORT as string
 
 const sequelize = new Sequelize(database, user, password, {
     host: process.env.MYSQL_HOST as string,
-    dialect: "mariadb",
+    dialect: "mysql",
     logging: false,
     // port: Number(port)
 })

@@ -172,6 +172,7 @@ export const startAnnouncement = async (data: AnnouncementData) => {
 
     
     addAnnouncement(newAnnouncementData)
+    return true
 }
 
 const handleStartTimeBefore = (data: AnnouncementDatabaseData) => {

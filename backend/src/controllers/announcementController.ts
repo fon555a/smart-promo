@@ -18,9 +18,14 @@ export const addAnnouncement = async (request: Request, response: Response) => {
     const announcementData: AnnouncementData = JSON.parse(request.body.data)
     announcementData.imageFiles = imageFiles as any
 
-    startAnnouncement(announcementData)
+    const isSuccess = await startAnnouncement(announcementData)
 
+    if (!isSuccess) {
+        response.status(500).json({ success: false, error: "database error" })
+        return false
+    }
     response.status(200).json({ success: true })
+    return true
 }
 
 export const getStartedAnnouncement = async (request: Request, response: Response) => {
