@@ -13,6 +13,7 @@ export const initIo = (server: HttpServer) => {
             origin: [
                 process.env.DOMAIN_URL as string
             ],
+            credentials: true,
             methods: ["GET", "POST"]
         },
 
