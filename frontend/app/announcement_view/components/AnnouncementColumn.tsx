@@ -11,7 +11,8 @@ interface Props {
 
 const AnnouncementColumn = ({ announcementAt, imagesList, text }: Props) => {
     const backendUrl = process.env.NEXT_PUBLIC_DOMAIN_URL
-    
+    console.log("Domain url:", backendUrl)
+    console.log("Images url:", imagesList)
     const previewImages = imagesList.map((image: string) => {
         return backendUrl + "/api/announcements" + image
     })
