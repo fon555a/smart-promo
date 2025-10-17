@@ -7,7 +7,7 @@ import multer from "multer"
 import path from "path"
 
 const router = express.Router()
-const uploadPath = path.join(__dirname, "../uploads");
+const uploadPath = path.join(__dirname, "../../uploads");
 
 // ตรวจสอบว่าโฟลเดอร์ uploads มีอยู่หรือไม่ ถ้าไม่สร้าง
 if (!fs.existsSync(uploadPath)) {
