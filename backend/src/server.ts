@@ -4,9 +4,9 @@ import next from "next";
 
 
 import { createServer } from "http"
-import fs from "fs"
 import { initIo } from "./io";
 import announcementRoute from "./routes/announcementRoute";
+import ttsRoute from "./routes/tssRoute"
 import path from "path";
 
 import "dotenv/config"
@@ -14,7 +14,7 @@ import { syncAllCurrentAnnouncement } from "./services/announcementService";
 import getServerIp from "./lib/getServerIp";
 
 const routes = {
-    announcementRoute
+    announcementRoute, ttsRoute
 };
 
 
@@ -34,7 +34,7 @@ nextApp.prepare().then(() => {
 
     // Routes
     expressApp.use("/api/announcements", routes.announcementRoute)
-
+    expressApp.use("/api/tts", routes.ttsRoute)
 
 
     // --- Next.js setup ---

@@ -44,3 +44,4 @@ frontend/public.uploads/
 backend/.env*
 frontend/.env.local*
 backend/src/uploads/*
+frontend/.next/*
