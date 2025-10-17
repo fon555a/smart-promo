@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import ImagePage from "./components/ImagePage"
 import { getSocket } from "../../lib/socket"
 
@@ -43,13 +44,18 @@ const AnnouncementPage = () => {
   const [imagesList, setImagesList] = useState<string[]>([])
   const [qrcodeLink, setQrcodeLink] = useState<string>(null)
 
+  const searchParams = useSearchParams()
+  const isKiosk = searchParams.get("kiosk")
   const speechRef = useRef<SpeechRecognizer | null>(null)
   const stopSpeechTimeout = useRef<NodeJS.Timeout | null>(null)
 
   const [state, send] = useMachine(speechMachine)
   const stateRef = useRef(state)
 
+
   useEffect(() => {
+    console.log("Is kiosk:", typeof(isKiosk), isKiosk)
+
     stateRef.current = state
     console.log("state:", stateRef.current.value)
   }, [state])
@@ -101,7 +107,7 @@ const AnnouncementPage = () => {
       console.log("Distance update:", distance)
     })
 
-    
+
 
     return socket
   }
@@ -248,8 +254,9 @@ const AnnouncementPage = () => {
         }}>Test Announcement {isAnnounceing ? "true" : "false"}</button>
       </div> */}
       <div className="">
-        {showStartButton &&
+        {!isKiosk && showStartButton &&
           <button onClick={() => setShowStartButton(false)} className="w-screen h-screen text-primary font-bold text-2xl bg-white text-center z-3 fixed cursor-pointer">กดเพื่อเริ่มต้นการใช้งาน</button>
+        
         }
         <ImagePage imagesList={imagesList} />
 
