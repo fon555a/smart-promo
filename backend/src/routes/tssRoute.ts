@@ -16,7 +16,7 @@ router.post("/tts-request", async (request: Request, response: Response) => {
 
     response.setHeader("Content-Type", "application/octet-stream")
     response.setHeader("Content-Length", arrayBuffer.byteLength)
-    response.send(arrayBuffer)
+    response.status(200).send(arrayBuffer)
 })
 
 export default router
