@@ -9,16 +9,29 @@ const SpeechTest = () => {
     const speechQueueRef = useRef<AudioBufferQueue>(null)
 
     const getSpeechData = async (text: string): Promise<false | ArrayBuffer> => {
-        const response = await axios.post("/api/tts/tts-request", { text: text }, {
-            responseType: "arraybuffer"
-        })
+        try {
+            const response = await axios.post("/api/tts/tts-request", { text: text }, {
+                responseType: "arraybuffer"
+            })
 
-        if (response.status !== 200) {
-            console.error("Cannot get speech data:", response.data)
-            return false
+            if (response.status !== 200) {
+                console.error("Cannot get speech data:", response.data)
+                return false
+            }
+            const arrayBuffer = response.data
+            return arrayBuffer
+        } catch (error) {
+            if (error.response) {
+                const decoder = new TextDecoder("utf-8")
+                const jsonData = JSON.parse(decoder.decode(error.response.data))
+
+                console.log("status:", error.response.status)        // 500
+                console.log("body:", jsonData)            // JSON erroror จาก backend
+            } else {
+                console.log("network error:", error.message)
+            }
         }
-        const arrayBuffer = response.data
-        return arrayBuffer
+
     }
 
     const handleOnSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -40,7 +53,7 @@ const SpeechTest = () => {
 
     useEffect(() => {
         speechQueueRef.current = new AudioBufferQueue()
-        
+
         speechQueueRef.current.createQueue("answerSpeaking", () => {
             console.log("Speech success")
         })

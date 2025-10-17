@@ -7,6 +7,9 @@ const router = express.Router()
 router.post("/tts-request", async (request: Request, response: Response) => {
     const text = request.body.text
 
+    // response.status(500).json({ error: "convert text error", message: "test error" })
+
+    // debugger
     try {
         const [arrayBuffer, error] = await convertTextToSpeech(text)
 
