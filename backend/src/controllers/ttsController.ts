@@ -7,10 +7,10 @@ export type SpeechConfig = {
 } 
 
 export const sentSpeechMessageToClient = async (context: string, text: string, config?: SpeechConfig) => {
-    const speechAudio = await convertTextToSpeech(text)
+    const [speechAudio, error] = await convertTextToSpeech(text)
 
     if (!speechAudio) {
-        console.error("Cannot get the TTS Audio.")
+        console.error("Cannot get the TTS Audio.", error)
         return false
     }
 

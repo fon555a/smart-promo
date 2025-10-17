@@ -14,11 +14,4 @@ const sequelize = new Sequelize(database, user, password, {
     // port: Number(port)
 })
 
-// const sequelize = new Sequelize("smartpr_announcement", "smartpr_fon", "FONggez2019", {
-//     host: "localhost",
-//     dialect: "mysql",
-//     logging: false,
-//     // port: Number(port)
-// })
-
 export default sequelize
