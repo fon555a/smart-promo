@@ -43,5 +43,5 @@ next-env.d.ts
 frontend/public.uploads/
 backend/.env*
 frontend/.env.local*
-backend/src/uploads/*
+backend/uploads*
 frontend/.next/*
