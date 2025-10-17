@@ -6,12 +6,12 @@ import "dotenv/config"
 const convertText = z.string()
 
 // @params text string
-export const convertTextToSpeech = async (text: string) => {
+export const convertTextToSpeech = async (text: string): Promise<[false, string] | [ArrayBuffer]> => {
     const checkResult = convertText.safeParse(text)
 
     if (!checkResult.success) {
         console.error("The type of the text must be a string.")
-        return false
+        return [false, "The type of the text must be a string."]
     }
 
     const apiKey = process.env.TTS_API_KEY
@@ -32,11 +32,11 @@ export const convertTextToSpeech = async (text: string) => {
                 responseType: "arraybuffer", // รับเป็น binary
             }
         );
-        return response.data
+        return [response.data]
 
     } catch (error) {
         console.error("Speech error:", error)
-        return [false, error]
+        return [false, error as string]
     }
 
 

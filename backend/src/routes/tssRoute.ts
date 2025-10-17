@@ -6,17 +6,24 @@ const router = express.Router()
 
 router.post("/tts-request", async (request: Request, response: Response) => {
     const text = request.body.text
-    const [arrayBuffer, error] = await convertTextToSpeech(text)
-    
-    if (!arrayBuffer) {
 
-        response.status(500).json({ error: "convert text error", message: error })
-        return false
+    try {
+        const [arrayBuffer, error] = await convertTextToSpeech(text)
+
+        if (!arrayBuffer) {
+
+            response.status(500).json({ error: "convert text error", message: error })
+            return false
+        }
+
+        response.setHeader("Content-Type", "application/octet-stream")
+        response.setHeader("Content-Length", arrayBuffer.byteLength)
+        response.send(arrayBuffer)
+    } catch (error) {
+        console.log("Error:", error)
+        response.status(500).json({ error: "convert failed", message: error })
     }
 
-    response.setHeader("Content-Type", "application/octet-stream")
-    response.setHeader("Content-Length", arrayBuffer.byteLength)
-    response.status(200).send(arrayBuffer)
 })
 
 export default router
