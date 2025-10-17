@@ -6,7 +6,7 @@ import "dotenv/config"
 const convertText = z.string()
 
 // @params text string
-export const convertTextToSpeech = async (text: string): Promise<false | ArrayBuffer> => {
+export const convertTextToSpeech = async (text: string) => {
     const checkResult = convertText.safeParse(text)
 
     if (!checkResult.success) {
@@ -36,7 +36,7 @@ export const convertTextToSpeech = async (text: string): Promise<false | ArrayBu
 
     } catch (error) {
         console.error("Speech error:", error)
-        return false
+        return [false, error]
     }
 
 

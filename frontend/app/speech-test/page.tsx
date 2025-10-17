@@ -8,11 +8,15 @@ const SpeechTest = () => {
     const valueRef = useRef("")
     const speechQueueRef = useRef<AudioBufferQueue>(null)
 
-    const getSpeechData = async (text: string): Promise<ArrayBuffer> => {
+    const getSpeechData = async (text: string): Promise<false | ArrayBuffer> => {
         const response = await axios.post("/api/tts/tts-request", { text: text }, {
             responseType: "arraybuffer"
         })
 
+        if (response.status !== 200) {
+            console.error("Cannot get speech data:", response.data)
+            return false
+        }
         const arrayBuffer = response.data
         return arrayBuffer
     }
@@ -21,6 +25,11 @@ const SpeechTest = () => {
         event.preventDefault()
 
         const speechData = await getSpeechData(valueRef.current)
+
+        if (!speechData) {
+            console.log("Cannot get speech data.")
+            return false
+        }
         console.log(valueRef.current)
 
         speechQueueRef.current?.addQueue("answerSpeaking", speechData, {
