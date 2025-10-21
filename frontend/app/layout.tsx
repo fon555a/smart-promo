@@ -9,9 +9,12 @@ const kanit = Kanit({
 })
 
 export const metadata: Metadata = {
-  title: "My app",
+  title: "เว็บสิ่งประดิษฐ์ประชาสัมพันธ์ แม่สอด",
   description: "this is smart promo app",
   keywords: ["promo", "smart promo", "best promo"],
+  icons: {
+    icon: "/web-icon.png"
+  }
 }
 
 const layout = ({ children }: { children: ReactNode}) => {
