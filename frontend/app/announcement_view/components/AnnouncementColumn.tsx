@@ -21,7 +21,7 @@ const AnnouncementColumn = ({ announcementAt, imagesList, text }: Props) => {
         <div className="flex flex-col justify-between items-center border-primary border-2 px-5 py-2 rounded-md gap-5 ">
             <div className="information w-full">
                 <p className="text-secondary">ประกาศเมื่อ {announcementAt}</p>
-                <p className=" text-xl text-primary">{text}</p>
+                <p className=" text-xl text-primary max-w-100">{text}</p>
             </div>
             <div className="image w-full">
                 {imagesList?.length === 0 ?
