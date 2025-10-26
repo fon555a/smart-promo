@@ -1,5 +1,6 @@
 import "dotenv/config";
 
+
 export const generateText = async (
     prompt: string,
     onMessageRender: (message: string) => void
@@ -24,7 +25,6 @@ export const generateText = async (
         provider: {
             "allow_fallbacks": true,
             "sort": "latency",
-
         },
         quantizations: [
             "int4",
@@ -32,9 +32,6 @@ export const generateText = async (
             "int8"
         ],
         stream: true,
-        // temperature: 0.6,
-        // max_tokens: 100,
-        // top_p: 0.6,
     };
 
     const response = await fetch(url, {
@@ -54,15 +51,34 @@ export const generateText = async (
 
     const decoder = new TextDecoder();
     let buffer = "";
-    let sentenceBuffer = "";
-    let isDone = false;
+    let currentSentence = "";
+    let isInQuote = false;
+    let isInParenthesis = false;
+
+    // คำลงท้ายที่เจอแล้วน่าจะจบประโยค
+    const endMarkers = new Set([
+        'ครับ', 'ค่ะ', 'นะ', 'จ้ะ', 'คะ', 'น้า', 'น๊า', 'น่ะ',
+        'เลย', 'แล้ว', 'แหละ', 'ล่ะ', 'หน่อย', 'สิ', 'อะ', 'อ่ะ',
+        'มั้ย', 'ไหม', 'รึเปล่า', 'ใช่ไหม', 'ใช่มั้ย', 'ป่ะ', 'ปะ'
+    ]);
+
+    // ฟังก์ชันส่งประโยคทันที
+    const flushSentence = () => {
+        const trimmed = currentSentence.trim();
+        if (trimmed) {
+            onMessageRender(trimmed);
+        }
+        currentSentence = "";
+    };
 
     try {
-        while (!isDone) {
+        while (true) {
             const { done, value } = await reader.read();
             if (done) break;
+
             buffer += decoder.decode(value, { stream: true });
 
+            // ประมวลผลทีละบรรทัด
             while (true) {
                 const lineEnd = buffer.indexOf("\n");
                 if (lineEnd === -1) break;
@@ -72,39 +88,70 @@ export const generateText = async (
 
                 if (!line.startsWith("data: ")) continue;
                 const data = line.slice(6);
-                if (data === "[DONE]") {
-                    isDone = true;
-                    break;
-                }
+                if (data === "[DONE]") break;
 
                 try {
                     const parsed = JSON.parse(data);
                     const content = parsed?.choices?.[0]?.delta?.content;
                     if (!content) continue;
 
-                    sentenceBuffer += content;
+                    // เพิ่มทีละตัวอักษร
+                    for (const char of content) {
+                        currentSentence += char;
 
-                    // ตัดประโยค: ภาษาไทย + อังกฤษ
-                    const sentences = sentenceBuffer.split(/(?<=[.!?ฯๆ])\s+|(?<=(ครับ|ค่ะ|นะ|จ้า|เลย|แล้ว))/);
+                        // ติดตามสถานะวงเล็บ / คำพูด
+                        if (char === '“' || char === '”' || char === '"') isInQuote = !isInQuote;
+                        if (char === '(' || char === '【' || char === '『') isInParenthesis = true;
+                        if (char === ')' || char === '】' || char === '』') isInParenthesis = false;
 
-                    // เอาประโยคสุดท้ายไว้ต่อ
-                    sentenceBuffer = sentences.pop() || "";
+                        // ตรวจสอบจุดสิ้นสุดประโยค
+                        const last2 = currentSentence.slice(-2);
+                        const last3 = currentSentence.slice(-3);
+                        const last4 = currentSentence.slice(-4);
+                        const lastChar = char;
 
-                    for (const s of sentences) {
-                        if (s && s.trim()) {
-                            onMessageRender(s.trim());
+                        let shouldFlush = false;
+
+                        // 1. วรรคตอนชัดเจน + ไม่ใช่คำย่อ
+                        if (/[.!?ฯ]/.test(lastChar)) {
+                            const prevChar = currentSentence[currentSentence.length - 2] as string;
+                            // หลีกเลี่ยง พ.ศ. , น. , ฯลฯ
+                            if (lastChar === '.' && /[A-Za-z0-9]/.test(prevChar)) continue;
+                            if (lastChar === 'ฯ' && currentSentence.endsWith('ฯลฯ')) continue;
+
+                            shouldFlush = true;
+                        }
+                        // 2. ปิดวงเล็บ / คำพูด
+                        else if (/[")\]」』]/.test(lastChar) && !isInQuote && !isInParenthesis) {
+                            shouldFlush = true;
+                        }
+                        // 3. คำลงท้าย + ช่องว่างหรือขึ้นบรรทัด
+                        else if (/\s/.test(char)) {
+                            const words = currentSentence.trim().split(/\s+/);
+                            const lastWord = words[words.length - 1] as string;
+                            if (endMarkers.has(lastWord)) {
+                                shouldFlush = true;
+                            }
+                        }
+
+                        // ส่งทันทีถ้าควร
+                        if (shouldFlush && !isInQuote && !isInParenthesis) {
+                            // ตรวจสอบว่าประโยคไม่สั้นเกินไป (ป้องกัน spam)
+                            if (currentSentence.trim().length >= 8) {
+                                flushSentence();
+                            }
                         }
                     }
 
-                } catch {
-                    // ignore invalid JSON
+                } catch (e) {
+                    // ignore JSON error
                 }
             }
         }
 
-        // ถ้ามีเศษประโยคเหลือ
-        if (sentenceBuffer.trim()) {
-            onMessageRender(sentenceBuffer.trim());
+        // สิ้นสุด stream → ส่งประโยคที่เหลือ
+        if (currentSentence.trim()) {
+            flushSentence();
         }
 
     } finally {
