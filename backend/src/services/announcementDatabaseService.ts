@@ -139,6 +139,13 @@ export const getAllCurrentAnnouncement = async (): Promise<AnnouncementDatabaseD
     return allAnnouncement
 }
 
+export const getAllAnnouncements = async () => {
+    const allOrderData: OrderData[] = await AnnouncementOrder.findAll() as any
+    const allAnnouncement: AnnouncementDatabaseData[] = await buildDataFromOrderResults(allOrderData)
+
+    return allAnnouncement
+}
+
 export const addAnnouncementData = async (data: Data): Promise<[OrderData, ImageData[]]> => {
     const imageFiles = data.imageFiles
     const settings = data.settings
