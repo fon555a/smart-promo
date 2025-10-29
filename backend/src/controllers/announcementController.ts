@@ -84,7 +84,7 @@ export const askAnnouncement = async (request: Request, response: Response) => {
 
     console.log("MaskedData:", maskedData)
     const jsonData = JSON.stringify(maskedData)
-    const prompt = data.text + " ข้อมูล: " + jsonData
+    const prompt = data.text + " ข้อมูลข่าวประชาสัมพันธ์ที่ผู้ใช้ได้ประกาศทั้งหมด: " + jsonData
 
     console.log("Prompt:", prompt)
     await generateText(prompt, (renderedMessage: string) => {

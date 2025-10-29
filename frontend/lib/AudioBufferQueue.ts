@@ -9,6 +9,7 @@ type PlaySetting = {
 class Queue {
     public isPlaying: boolean = false
     public onSuccess?: () => void = null
+    public currentSource: AudioBufferSourceNode
 
     private queue: Array<{
         arrayBuffer: ArrayBuffer,
@@ -65,6 +66,25 @@ export default class AudioBufferQueue {
         }
     }
 
+    public cancelCurrentQueue(queueId) {
+        const queue = this.queueList[queueId]
+        if (!queue) return false
+
+        if (queue.currentSource) {
+            try {
+                queue.currentSource.stop()
+            } catch (e) {
+                console.warn("Tried to stop already stopped source", e)
+            }
+            queue.currentSource = null
+        }
+
+        queue.isPlaying = false
+        queue["queue"] = [] // เคลียร์เสียงที่เหลือในคิว
+        console.log(`Queue "${queueId}" canceled.`)
+        return true
+    }
+
     private async playNext(queue: Queue) {
         if (queue.isPlaying) return false
         if (queue.length() === 0) {
@@ -77,7 +97,7 @@ export default class AudioBufferQueue {
 
         while (queue.length() > 0) {
             const queueData = queue.shift()
-            await this.playAudio(queueData.arrayBuffer, queueData.playSetting)
+            await this.playAudio(queueData.arrayBuffer, queueData.playSetting, queue)
         }
 
         queue.isPlaying = false
@@ -85,7 +105,8 @@ export default class AudioBufferQueue {
 
     }
 
-    private async playAudio(arrayBuffer: ArrayBuffer, playSetting: PlaySetting) {
+    private async playAudio(arrayBuffer: ArrayBuffer, playSetting: PlaySetting, queue: Queue) {
+
         const audioCtx = this.audioContext
         const decodedData = await audioCtx.decodeAudioData(arrayBuffer)
         const playCount = playSetting.repeatCount
@@ -96,6 +117,8 @@ export default class AudioBufferQueue {
                 const source = audioCtx.createBufferSource();
                 source.buffer = decodedData;
                 source.connect(audioCtx.destination);
+
+                queue.currentSource = source
                 source.onended = () => {
                     resolve(null)
                 }
@@ -104,7 +127,7 @@ export default class AudioBufferQueue {
             await wait(delaySecondsTime * 1000)
         }
 
-        
+        queue.currentSource = null
     }
 
     public destroy() {

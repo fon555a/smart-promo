@@ -20,7 +20,8 @@ type SpeechRecognition = {
   onerror: (event: ErrorEvent) => void,
   onend: () => void,
   start: () => void,
-  stop: () => void
+  stop: () => void,
+  abort: () => void
 }
 
 type Windows = {
@@ -39,7 +40,7 @@ export class SpeechRecognizer {
 
   constructor() {
     if (typeof window !== "undefined") {
-      
+
       const SpeechRecognition =
         (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -78,7 +79,12 @@ export class SpeechRecognizer {
       };
 
       this.recognition.onend = () => {
-        if (this.isListening) this.recognition?.start(); // auto restart
+        if (this.isListening) {
+          this.recognition?.abort()
+          setTimeout(() => {
+            this.recognition?.start()
+          }, 500);
+        } // auto restart
       };
     }
   }
@@ -93,7 +99,7 @@ export class SpeechRecognizer {
       this.start()
     }, 5000)
   }
-  
+
   private stopLoopTimeout() {
     if (this.loopStartTimeout) {
       clearTimeout(this.loopStartTimeout)

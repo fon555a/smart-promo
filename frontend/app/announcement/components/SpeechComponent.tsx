@@ -57,6 +57,8 @@ const SpeechComponent = ({ onSpeechSuccess, onMessageAdded, canSpeechPassCheck }
                     repeatDelaySeconds: repeatDelaySeconds
                 }
             )
+
+            audioBufferQueue.cancelCurrentQueue(speechContextList.answerSpeech)
         })
 
         socket.on(speechContextList.answerSpeech, async (speechData, speechConfig?: SpeechConfig) => {

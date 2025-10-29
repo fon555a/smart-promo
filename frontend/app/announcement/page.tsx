@@ -54,7 +54,6 @@ const AnnouncementPage = () => {
 
 
   useEffect(() => {
-    console.log("Is kiosk:", typeof(isKiosk), isKiosk)
 
     stateRef.current = state
     console.log("state:", stateRef.current.value)
@@ -256,7 +255,7 @@ const AnnouncementPage = () => {
       <div className="">
         {!isKiosk && showStartButton &&
           <button onClick={() => setShowStartButton(false)} className="w-screen h-screen text-primary font-bold text-2xl bg-white text-center z-3 fixed cursor-pointer">กดเพื่อเริ่มต้นการใช้งาน</button>
-        
+
         }
         <ImagePage imagesList={imagesList} />
 
