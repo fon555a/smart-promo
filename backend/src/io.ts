@@ -11,7 +11,8 @@ export const initIo = (server: HttpServer) => {
             //     "http://localhost:3000"
             // ],
             origin: [
-                process.env.DOMAIN_URL as string
+                process.env.DOMAIN_URL as string,
+                process.env.ASR_URL as string
             ],
             credentials: true,
             methods: ["GET", "POST"]

@@ -6,7 +6,7 @@ import timezone from "dayjs/plugin/timezone"
 import { AnnouncementQueue } from "../classes/AnnouncementQueue"
 import Announcement from "../classes/Announcement"
 import winston from "winston";
-import { sentSpeechMessageToClient } from "../controllers/ttsController"
+import { sendSpeech, sentSpeechMessageToClient } from "../controllers/ttsController"
 import { MAX_ANNOUNCEMENT_TIMEOUT, MIN_ANNOUNCEMENT_TIMEOUT } from "../constants"
 
 const logger = winston.createLogger({
@@ -57,6 +57,11 @@ const createQueue = (): AnnouncementQueue => {
     const handleQueueStart = (queueInstance: { [key: string]: any }) => {
         const data: MaskedAnnouncementData = queueInstance.data
         fireAnnouncement(data)
+
+        // sendSpeech("announcementSpeech", data.text, {
+        //     repeatCount: 2,
+        //     repeatDelaySeconds: 2
+        // })
         sentSpeechMessageToClient("announcementSpeech", data.text, {
             repeatCount: 2,
             repeatDelaySeconds: 2

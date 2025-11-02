@@ -41,8 +41,15 @@ const SpeechComponent = ({ onSpeechSuccess, onMessageAdded, canSpeechPassCheck }
         })
 
         socket.on(speechContextList.announcementSpeech, async (speechData, speechConfig?: SpeechConfig) => {
+            console.log("Test1")
+            if (!speechData) {
+                console.error(speechConfig)
+                onMessageAdded("announcement")
+                onSpeechSuccess("announcement")
+                return false
+            }
             if (!canSpeechPassCheck("announcement")) return false
-            
+
             console.log("Speech data:", speechData)
             const repeatCount = speechConfig?.repeatCount || 1
             const repeatDelaySeconds = speechConfig?.repeatDelaySeconds || 1
@@ -62,6 +69,14 @@ const SpeechComponent = ({ onSpeechSuccess, onMessageAdded, canSpeechPassCheck }
         })
 
         socket.on(speechContextList.answerSpeech, async (speechData, speechConfig?: SpeechConfig) => {
+            console.log("Test2")
+            if (!speechData) {
+                console.error(speechConfig)
+                onMessageAdded("answer")
+                onSpeechSuccess("answer")
+                return false
+            }
+
             if (!canSpeechPassCheck("answer")) return false
             const repeatCount = speechConfig?.repeatCount || 1
             const repeatDelaySeconds = speechConfig?.repeatDelaySeconds || 1

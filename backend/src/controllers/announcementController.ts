@@ -93,26 +93,3 @@ export const askAnnouncement = async (request: Request, response: Response) => {
     })
     response.status(200).json({ success: true })
 }
-
-// export const askAnnouncement = async (request: Request, response: Response) => {
-//     const data: AskAnnouncementData = request.body
-
-//     const allTodayAnnouncements = await getAllTodayAnnouncements()
-
-//     const maskedData = allTodayAnnouncements.map((data) => {
-//         return data.text
-//     })
-
-//     console.log("MaskedData:", maskedData)
-//     const jsonData = JSON.stringify({
-//         "วันนี้": maskedData
-//     })
-//     const prompt = data.text + " ข้อมูล: " + jsonData
-
-//     console.log("Prompt:", prompt)
-//     await generateText(prompt, (renderedMessage: string) => {
-//         console.log("Rendered message:", renderedMessage)
-//         sentSpeechMessageToClient(speechContextList.answerSpeech, renderedMessage)
-//     })
-//     response.status(200).json({ success: true })
-// }

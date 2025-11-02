@@ -11,6 +11,7 @@ import path from "path";
 import "dotenv/config"
 import { syncAllCurrentAnnouncement } from "./services/announcementService";
 import getServerIp from "./lib/getServerIp";
+import { onMessageAdd, setupAsrSocket, startAsr, stopAsr } from "./services/asrService";
 
 const routes = {
     announcementRoute
@@ -41,12 +42,15 @@ nextApp.prepare().then(() => {
         response.status(200).json({ success: true })
     })
 
-
+    setupAsrSocket()
 
     // --- Socket.IO setup ---
     io.on("connection", async (socket) => {
         console.log("✅ User connected:", socket.id)
         const serverIp = getServerIp()
+
+
+
         socket.emit("socket-connected", serverIp)
 
         socket.on("disconnect", async () => {
@@ -54,9 +58,34 @@ nextApp.prepare().then(() => {
         });
     })
 
+    io.of("/asr").on("connection", (socket) => {
+        console.log("Web client connected");
+
+        const connection = onMessageAdd((message) => {
+            console.log("Asr from server:", message)
+            socket.emit("message", message)
+        })
+
+        socket.on("start", () => {
+            startAsr()
+        })
+
+        socket.on("stop", () => {
+            stopAsr()
+        })
+
+        socket.on("disconnect", async () => {
+            console.log("Client disconnected:", socket.id);
+            connection.disconnect()
+
+        });
+
+    })
+
 
     // expressApp.all(/^(?!\/api\/).*$/, (req, res) => handle(req, res));
     // expressApp.use((req, res) => handle(req, res))
+
 
     syncAllCurrentAnnouncement()
 

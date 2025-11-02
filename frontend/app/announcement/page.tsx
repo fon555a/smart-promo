@@ -28,14 +28,14 @@ type MessageData = {
   text: string
 }
 
-const MAX_SPEECH_TIMEOUT = 1500
+const MAX_SPEECH_TIMEOUT = 5000
 
 const socketList = {
   "add-announcement": "add-announcement",
   "remove-current-announcement": "remove-current-announcement",
   "distance-update": "distance-update",
   "load-server-ip": "load-server-ip",
-  "socket-connected": "socket-connected"
+  "socket-connected": "socket-connected",
 }
 
 const AnnouncementPage = () => {
@@ -85,6 +85,7 @@ const AnnouncementPage = () => {
     socket.on(socketList["socket-connected"], () => {
       console.log("Socket is connected!!!")
     })
+
 
     socket.on(socketList["add-announcement"], async (messageData: MessageData) => {
       console.log("new message:", messageData)
@@ -165,7 +166,12 @@ const AnnouncementPage = () => {
 
   const onTranscript = (text: string) => {
     send({ type: "START_TALKING" })
-    if (!isStateMatch("userTalking")) return false
+    console.log("Text from transcript!!", text)
+
+    if (!isStateMatch("userTalking") && !isStateMatch("listening")) {
+      console.log("Player still tralking")
+      return false
+    }
 
     send({ type: "SET_MESSAGE", text: text })
     console.log("Current message:", text)
