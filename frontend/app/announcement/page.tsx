@@ -124,11 +124,17 @@ const AnnouncementPage = () => {
 
     send({ type: "FACE_ENTER" })
 
+    if (isStateMatch("idle")) {
+      if (!speechRef.current?.isStarted()) {
+        speechRef.current?.start()
+
+      }
+    }
+
     if (isStateMatch("listening")) {
       if (!speechRef.current?.isStarted()) {
         speechRef.current?.start()
       }
-
       clearStopSpeechTimeout()
       console.log("Face enter")
     }
