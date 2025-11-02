@@ -36,6 +36,11 @@ export const getStartedAnnouncement = async (request: Request, response: Respons
 
 const buildAnnouncementsTimes = (allAnnouncementData: AnnouncementDatabaseData[]): { [k: string]: AnnouncementDatabaseData[] } => {
     const timesTable: { [k: string]: AnnouncementDatabaseData[] } = {
+        "วันนี้": [],
+        "เมื่อวาน": [],
+        "พรุ่งนี้": [],
+        "หลังจากพรุ่งนี้": [],
+        "ก่อนเมื่อวาน": []
     }
 
     const nowTime = dayjs().startOf("day")
@@ -84,7 +89,7 @@ export const askAnnouncement = async (request: Request, response: Response) => {
 
     console.log("MaskedData:", maskedData)
     const jsonData = JSON.stringify(maskedData)
-    const prompt = data.text + " ข้อมูลข่าวประชาสัมพันธ์ที่ผู้ใช้ได้ประกาศทั้งหมด: " + jsonData
+    const prompt = "ข้อมูลประชาสัมพันธ์ทั้งหมด: " + jsonData + " " + data.text
 
     console.log("Prompt:", prompt)
     await generateText(prompt, (renderedMessage: string) => {
