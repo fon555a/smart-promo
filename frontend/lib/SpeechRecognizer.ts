@@ -24,9 +24,10 @@ type SpeechRecognition = {
   abort: () => void
 }
 
-// Note: intentionally not creating a strict "window" typing here because
-// the Web Speech API types differ across browsers (SpeechRecognition / webkitSpeechRecognition).
-// We use a loose cast where necessary below.
+type Windows = {
+  SpeechRecognition: SpeechRecognition,
+  webkitSpeechRecognition: SpeechRecognition
+}
 
 export class SpeechRecognizer {
   private recognition: SpeechRecognition | null = null;
@@ -56,73 +57,34 @@ export class SpeechRecognizer {
 
       this.recognition.onresult = (event: SpeechRecognitionEvent) => {
         let interimTranscript = "";
-        let hadFinal = false;
 
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const transcriptChunk = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
             this.buffer += transcriptChunk + " ";
-            hadFinal = true;
           } else {
             interimTranscript += transcriptChunk + " ";
           }
         }
 
-        // ส่ง interim ก่อนเสมอ (ถ้ามี)
-        if (interimTranscript.trim()) {
-          this.interimCallback?.(interimTranscript.trim());
-        }
+        // รวมทุกข้อความ (interim + final buffer)
+        this.callback?.((this.buffer + interimTranscript).trim(), false);
 
-        // ถ้ามี final result ให้ส่งเป็น final callback และเคลียร์ buffer
-        if (hadFinal) {
-          const finalText = this.buffer.trim();
-          if (finalText) {
-            this.callback?.(finalText, true);
-          }
-          // เคลียร์ buffer หลังส่ง final
-          this.buffer = "";
-        } else {
-          // ยังไม่มี final ส่งสถานะ interim/partial
-          this.callback?.((this.buffer + interimTranscript).trim(), false);
-        }
+        // ✅ รันทันทีที่ข้อความ interim update
+        this.interimCallback?.(interimTranscript.trim());
       };
 
       this.recognition.onerror = (event) => {
-        try {
-          console.error("SpeechRecognition error:", (event as any).error || event);
-        } catch (e) {
-          console.error("SpeechRecognition unknown error", e);
-        }
-
-        // สำหรับ error ที่ recoverable ให้ลอง restart ถ้าเราต้องการฟังต่อ
-        const err = (event as any).error as string | undefined;
-        const recoverable = ["no-speech", "network", "aborted", "audio-capture", "not-allowed", "service-not-allowed"];
-        if (this.isListening && err && recoverable.includes(err)) {
-          // ลองรีสตาร์ทหลังหน่วงเวลาเล็กน้อย
-          setTimeout(() => {
-            try {
-              this.recognition?.start();
-            } catch {
-              // ignore start errors
-            }
-          }, 500);
-        }
+        console.error("SpeechRecognition error:", event.error);
       };
 
       this.recognition.onend = () => {
-        // บาง browser จะหยุด session หลังเวลาหนึ่ง หากเรายังต้องการฟังต่อให้พยายามเริ่มใหม่
         if (this.isListening) {
+          this.recognition?.abort()
           setTimeout(() => {
-            try {
-              this.recognition?.start();
-            } catch {
-              // ถ้า start ล้มเหลว ให้รอแล้วลองอีกครั้ง
-              setTimeout(() => {
-                try { this.recognition?.start(); } catch { }
-              }, 2000);
-            }
+            this.recognition?.start()
           }, 500);
-        }
+        } // auto restart
       };
     }
   }
