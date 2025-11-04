@@ -19,7 +19,7 @@ const QRCodeComponent = ({ url }: Props) => {
     return (
         <div className="fixed flex justify-center z-2 top-0 left-0 right-0">
             <div className="bg-white border-3 border-primary items-center flex flex-col justify-center text-center p-2 rounded-2xl">
-                <canvas ref={imageRef}></canvas>
+                <canvas className="" ref={imageRef}></canvas>
                 <p className="text-primary text-2xl">สแกน QR Code </p>
                 <p className="text-primary text-2xl">เพื่อส่งข้อมูลประชาสัมพันธ์</p>
 

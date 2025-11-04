@@ -16,6 +16,8 @@ import { useMachine } from "@xstate/react"
 import { speechMachine } from "./machines/speechMachine"
 
 import QRCodeComponent from "./components/QRCodeComponent";
+import WebCamComponent from "./components/WebCamComponent"
+import GuideComponent from "./components/GuideComponent"
 
 const FaceDetectorComponent = dynamic(
   () => import("./components/FaceDetectorComponent"),
@@ -43,6 +45,7 @@ const AnnouncementPage = () => {
   const [showStartButton, setShowStartButton] = useState(true)
   const [imagesList, setImagesList] = useState<string[]>([])
   const [qrcodeLink, setQrcodeLink] = useState<string>(null)
+  const [messageText, setMessageText] = useState<string>("ยังไม่มีการประกาศ")
 
   const searchParams = useSearchParams()
   const isKiosk = searchParams.get("kiosk")
@@ -55,11 +58,17 @@ const AnnouncementPage = () => {
 
   const stateRef = useRef(state)
 
+  const onStartChanged = (state: string) => {
+    if (state === "idle") {
+      setMessageText("ยังไม่มีการประกาศ")
+    }
+  }
 
   useEffect(() => {
 
     stateRef.current = state
     console.log("state:", stateRef.current.value)
+    onStartChanged(state.value as string)
   }, [state])
 
   const isStateMatch = (state: string) => {
@@ -92,6 +101,7 @@ const AnnouncementPage = () => {
 
     socket.on(socketList["add-announcement"], async (messageData: MessageData) => {
       console.log("new message:", messageData)
+      setMessageText(messageData.text)
       const newImageList = messageData.imagesList.map((image) => {
         return process.env.NEXT_PUBLIC_DOMAIN_URL + "/api/announcements" + image
       })
@@ -174,7 +184,7 @@ const AnnouncementPage = () => {
 
   }
 
-  
+
   const onTranscript = useCallback((text: string) => {
     send({ type: "START_TALKING" })
     console.log("Text from transcript!!", text)
@@ -268,6 +278,8 @@ const AnnouncementPage = () => {
         onFaceEnter={handleFaceEnter}
         onFaceLeave={handleFaceLeave}
       />
+
+
       {(state.matches("listening") || state.matches("userTalking")) &&
         <ListeningComponent text={currentText} />
       }
@@ -288,11 +300,19 @@ const AnnouncementPage = () => {
           <button onClick={() => setShowStartButton(false)} className="w-screen h-screen text-primary font-bold text-2xl bg-white text-center z-3 fixed cursor-pointer">กดเพื่อเริ่มต้นการใช้งาน</button>
 
         }
-        <ImagePage imagesList={imagesList} />
+        <ImagePage
+          imagesList={imagesList}
+          noImageText={messageText}
+        />
 
       </div>
-      {(!state.matches("announcementSpeaking") && qrcodeLink) &&
-        <QRCodeComponent url={qrcodeLink} />
+      {(!state.matches("announcementSpeaking")) &&
+        <div>
+          <QRCodeComponent url={qrcodeLink} />
+
+          <WebCamComponent />
+          <GuideComponent />
+        </div>
 
       }
     </>

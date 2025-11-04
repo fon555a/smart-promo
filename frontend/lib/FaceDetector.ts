@@ -1,4 +1,3 @@
-// lib/FaceDetector.ts
 import * as faceapi from "@vladmandic/face-api";
 
 type FaceDetectorCallback = (faces: number) => void;
@@ -9,6 +8,7 @@ export class FaceDetector {
   private callback?: FaceDetectorCallback;
   private prevFaceCount = 0;
   private stopped = false;
+  private lastDetections: faceapi.FaceDetection[] = [];
 
   constructor(callback?: FaceDetectorCallback) {
     this.callback = callback;
@@ -31,6 +31,16 @@ export class FaceDetector {
     this.detectLoop();
   }
 
+  /** ดึง video element ไปใช้ใน component */
+  getVideoElement() {
+    return this.video;
+  }
+
+  /** ดึงผลลัพธ์การตรวจล่าสุด */
+  getDetections() {
+    return this.lastDetections;
+  }
+
   private async detectLoop() {
     if (!this.video || this.stopped) return;
 
@@ -38,6 +48,8 @@ export class FaceDetector {
       this.video,
       new faceapi.TinyFaceDetectorOptions()
     );
+
+    this.lastDetections = detections;
 
     const faceCount = detections.length;
     if (faceCount > 0 && this.prevFaceCount === 0) {
@@ -57,5 +69,6 @@ export class FaceDetector {
     }
     this.video = null;
     this.stream = null;
+    this.lastDetections = [];
   }
 }

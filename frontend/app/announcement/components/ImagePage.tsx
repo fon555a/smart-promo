@@ -3,11 +3,12 @@ import { useEffect, useState } from "react"
 
 type Props = {
   imagesList?: string[],
-  interval?: number
+  interval?: number,
+  noImageText: string
 }
 
 
-const ImagePage = ({ imagesList, interval = 3000 }: Props) => {
+const ImagePage = ({ imagesList, interval = 3000, noImageText="ยังไม่มีรูปภาพ" }: Props) => {
   const [currentIndex, setCurrentIndex] = useState<number>(0)
   useEffect(() => {
     if (imagesList.length === 0) return;
@@ -19,7 +20,7 @@ const ImagePage = ({ imagesList, interval = 3000 }: Props) => {
   }, [imagesList])
 
   return (
-    <div className="w-screen h-screen flex justify-center items-center bg-black">
+    <div className="w-screen h-screen flex justify-center items-center bg-white">
       {imagesList[currentIndex] ?
         <img
           src={imagesList[currentIndex]}
@@ -36,7 +37,7 @@ const ImagePage = ({ imagesList, interval = 3000 }: Props) => {
         // />
 
         :
-        <h1 className="text-white text-4xl font-bold">ยังไม่มีรูปภาพ</h1>
+        <h1 className="text-primary text-4xl font-bold">{noImageText}</h1>
       }
 
     </div>
