@@ -30,7 +30,7 @@ type MessageData = {
   text: string
 }
 
-const MAX_SPEECH_TIMEOUT = 2500
+const MAX_SPEECH_TIMEOUT = 5000
 
 const socketList = {
   "add-announcement": "add-announcement",
@@ -166,7 +166,7 @@ const AnnouncementPage = () => {
         console.log("Start from page!!")
         speechRef.current?.start()
       }
-      clearStopSpeechTimeout()
+      resetStopSpeechTimeout()
       // console.log("Face enter")
     }
   }, [])

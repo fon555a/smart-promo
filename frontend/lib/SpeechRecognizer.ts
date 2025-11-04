@@ -70,9 +70,9 @@ export class SpeechRecognizer {
   }
 
 
-  public async start() {
+  public async start(force=false) {
     console.log("Is Listening:", this.isListening)
-    if (this.isListening) {
+    if (this.isListening && !force) {
       return false
     }
     console.log("Really started.")
@@ -107,7 +107,10 @@ export class SpeechRecognizer {
       }
     };
 
-    this.recognition.onerror = (event) => {
+    this.recognition.onerror = async (event) => {
+      if (this.isListening) {
+        await this.start(true)
+      }
       console.error("Speech error:", event.error);
     };
 
