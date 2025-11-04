@@ -4,9 +4,10 @@ import { SpeechRecognizer } from "../../../lib/SpeechRecognizer"
 
 interface Props {
     onTranscript: (text: string) => void,
-    onSpeechRecognizerAdded: (speechObject: SpeechRecognizer) => void
+    onSpeechRecognizerAdded: (speechObject: SpeechRecognizer) => void,
+    onInterim: (text: string) => void
 }
-const SpeechToTextComponent = ({ onTranscript, onSpeechRecognizerAdded }: Props) => {
+const SpeechToTextComponent = ({ onTranscript, onInterim, onSpeechRecognizerAdded }: Props) => {
     const speechRef = useRef<SpeechRecognizer | null>(null)
 
 
@@ -20,10 +21,19 @@ const SpeechToTextComponent = ({ onTranscript, onSpeechRecognizerAdded }: Props)
             console.log("New text:", text)
             onTranscript(text)
         })
+
+        speechRef.current?.onInterim((text: string) => {
+            onInterim(text)
+        })
     }
 
     useEffect(() => {
+        console.log("Create new Speech")
         setupSpeechRecognizer()
+
+        return () => {
+            speechRef.current?.stop()
+        }
     }, [])
     return null
 }

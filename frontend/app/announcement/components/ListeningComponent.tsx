@@ -8,6 +8,7 @@ const ListeningComponent = ({ text }: Props) => {
 
     return (
         <div className="w-screen h-screen fixed justify-center">
+            
             <div className="container-lg flex flex-col justify-center items-center gap-3 absolute bottom-0 left-0 right-0 mb-15">
                 <div className="bg-white border-3 border-primary flex flex-col justify-center text-center p-3 rounded-2xl">
                     <Image

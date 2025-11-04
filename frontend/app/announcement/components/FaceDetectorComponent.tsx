@@ -13,6 +13,7 @@ export default function FaceDetectorComponent({ onFaceEnter, onFaceLeave }: Prop
   const detectorRef = useRef<FaceDetector | null>(null);
 
   useEffect(() => {
+    console.log("Change!!! state!!")
     const detector = new FaceDetector((faces) => {
       if (faces > 0 && onFaceEnter) onFaceEnter();
       else if (faces === 0 && onFaceLeave) onFaceLeave();
@@ -22,7 +23,7 @@ export default function FaceDetectorComponent({ onFaceEnter, onFaceLeave }: Prop
     detectorRef.current = detector;
 
     return () => detectorRef.current?.stop();
-  }, [onFaceEnter, onFaceLeave]);
+  }, []);
 
   return null; // ไม่ต้อง render UI
 }

@@ -21,8 +21,7 @@ type SpeechRecognition = {
   onend: () => void,
   start: () => void,
   stop: () => void,
-  abort: () => void,
-  addEventListener: (key: string, handler: () => void) => void
+  abort: () => void
 }
 
 type Windows = {
@@ -37,46 +36,8 @@ export class SpeechRecognizer {
   private interimCallback: InterimCallback | null = null;
   private buffer = "";
 
-  private currentInstances: SpeechRecognition[] = []
-
-  private inactivityTimer: NodeJS.Timeout | null = null;
-
-  private resetInactivityTimer() {
-    if (this.inactivityTimer) clearTimeout(this.inactivityTimer);
-    this.inactivityTimer = setTimeout(async () => {
-      console.log("No speech detected for 10 seconds, stopping...");
-      await this.stop(); // หยุด loop ถ้าไม่มีเสียงเลย 10 วิ
-    }, 10000);
-  }
-
-  private async stopAllInstances() {
-    const promises = this.currentInstances
-      .filter(i => i !== this.recognition)
-      .map(instance => new Promise<void>(resolve => {
-        try {
-          const handle = () => {
-            instance.onend = null
-            resolve()
-          }
-          instance.onend = handle
-          instance.stop()
-        } catch {
-          resolve()
-        }
-
-      }))
-    await Promise.allSettled(promises)
-    this.currentInstances = this.recognition ? [this.recognition] : []
-  }
-
-
-  public async start() {
-    console.log("Is Listening:", this.isListening)
-    if (this.isListening) {
-      return false
-    }
-    console.log("Really started.")
-    await this.clearSpeech()
+  public start() {
+    // if (this.isListening) return;
     this.isListening = true;
 
     const RecognitionClass =
@@ -94,8 +55,7 @@ export class SpeechRecognizer {
     this.recognition.maxAlternatives = 1;
 
     this.recognition.onresult = (event: SpeechRecognitionEvent) => {
-      // this.resetInactivityTimer()
-
+      console.log("Event:", event)
       const result = event.results[event.resultIndex];
       const transcript = result[0].transcript;
       if (result.isFinal) {
@@ -103,50 +63,41 @@ export class SpeechRecognizer {
         this.callback?.(this.buffer.trim(), true);
 
       } else {
+        console.log("Interim:", transcript.trim())
         this.interimCallback?.(transcript.trim());
       }
     };
 
     this.recognition.onerror = (event) => {
       console.error("Speech error:", event.error);
+      this.restart(); // ถ้ามี error ก็ restart ใหม่
     };
 
-    // this.recognition.onend = async () => {
-    //   console.log("End!!")
-    //   if (this.isListening) await this.restart(); // จบ session -> restart ใหม่
-    // };
+    this.recognition.onend = () => {
+      if (this.isListening) this.restart(); // จบ session -> restart ใหม่
+    };
 
-    this.currentInstances.push(this.recognition)
     this.recognition.start();
   }
 
-  // private async restart() {
-  //   await this.stop()
-  //   if (this.isListening) {
-  //     console.log("Start!!")
-  //     await this.start()
-  //   }
-
-  // }
-
-  private async clearSpeech() {
-    console.log("StopHell nahh!!")
-    this.recognition?.stop()
+  private restart() {
+    this.recognition?.stop();
     this.recognition = null;
+    setTimeout(() => {
+      if (this.isListening) {
+        console.log("Start!!")
+        this.start()
+      }
+    }, 200);
 
-    await this.stopAllInstances()
-    if (this.inactivityTimer) {
-      clearTimeout(this.inactivityTimer);
-      this.inactivityTimer = null;
-    }
-    this.buffer = ""
   }
 
-  public async stop() {
-
-    this.isListening = false
-    this.clearSpeech()
-
+  public stop() {
+    this.isListening = false;
+    this.recognition?.stop();
+    this.recognition = null;
+    console.log("Stop!!")
+    this.buffer = ""
   }
 
   public isStarted() {

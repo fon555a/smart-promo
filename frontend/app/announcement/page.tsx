@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import ImagePage from "./components/ImagePage"
 import { getSocket } from "../../lib/socket"
@@ -28,7 +28,7 @@ type MessageData = {
   text: string
 }
 
-const MAX_SPEECH_TIMEOUT = 5000
+const MAX_SPEECH_TIMEOUT = 2500
 
 const socketList = {
   "add-announcement": "add-announcement",
@@ -47,9 +47,12 @@ const AnnouncementPage = () => {
   const searchParams = useSearchParams()
   const isKiosk = searchParams.get("kiosk")
   const speechRef = useRef<SpeechRecognizer | null>(null)
+  const currentTextRef = useRef<string>("")
   const stopSpeechTimeout = useRef<NodeJS.Timeout | null>(null)
 
   const [state, send] = useMachine(speechMachine)
+  const [currentText, setText] = useState("")
+
   const stateRef = useRef(state)
 
 
@@ -120,57 +123,59 @@ const AnnouncementPage = () => {
     }
   }
 
-  const handleFaceEnter = () => {
 
-    send({ type: "FACE_ENTER" })
-
-    if (isStateMatch("idle")) {
-      if (!speechRef.current?.isStarted()) {
-        speechRef.current?.start()
-
-      }
-    }
-
-    if (isStateMatch("listening")) {
-      if (!speechRef.current?.isStarted()) {
-        speechRef.current?.start()
-      }
-      clearStopSpeechTimeout()
-      console.log("Face enter")
-    }
-  }
 
   const loadSpeechTimeout = () => {
-    console.log("Load timeout")
-    stopSpeechTimeout.current = setTimeout(() => {
+    stopSpeechTimeout.current = setTimeout(async () => {
 
       if (isStateMatch("listening")) {
         send({ type: "TIMEOUT" })
         console.log("ListeningTimeout")
       } else if (isStateMatch("userTalking")) {
+        // send({ type: "CANCEL" })
         send({ type: "SEND_SPEAK_DATA" })
         console.log("Send speak data.")
       }
-      speechRef.current?.stop()
 
+      currentTextRef.current = ""
+      setText("")
+      await speechRef.current?.stop()
+      console.log("Start reset message")
       send({ type: "RESET_MESSAGE" })
+
       console.log("Timeout Started")
     }, MAX_SPEECH_TIMEOUT);
   }
 
-  const handleFaceLeave = () => {
+  const handleFaceEnter = useCallback(() => {
+
+    send({ type: "FACE_ENTER" })
+
+    if (isStateMatch("listening") || isStateMatch("idle")) {
+      if (!speechRef.current?.isStarted()) {
+        console.log("Start from page!!")
+        speechRef.current?.start()
+      }
+      clearStopSpeechTimeout()
+      // console.log("Face enter")
+    }
+  }, [])
+  const handleFaceLeave = useCallback(() => {
     if (!isStateMatch("listening")) {
       return false
     }
     resetStopSpeechTimeout()
-  }
+  }, [])
 
   const resetStopSpeechTimeout = () => {
     clearStopSpeechTimeout()
     loadSpeechTimeout()
+
+
   }
 
-  const onTranscript = (text: string) => {
+  
+  const onTranscript = useCallback((text: string) => {
     send({ type: "START_TALKING" })
     console.log("Text from transcript!!", text)
 
@@ -181,23 +186,33 @@ const AnnouncementPage = () => {
 
     send({ type: "SET_MESSAGE", text: text })
     console.log("Current message:", text)
+    currentTextRef.current = text
+    setText(text)
     resetStopSpeechTimeout()
-  }
+  }, [])
 
-  const onSpeechRecognizerAdded = (speechObject: SpeechRecognizer) => {
+  const onInterim = useCallback((text: string) => {
+    if (isStateMatch("userTalking") || isStateMatch("listening")) {
+      resetStopSpeechTimeout()
+      console.log("Reset timeout")
+      setText((currentTextRef.current + " " + text).trim())
+    }
+  }, [])
+
+  const onSpeechRecognizerAdded = useCallback((speechObject: SpeechRecognizer) => {
     speechRef.current = speechObject
-  }
+  }, [])
 
-  const onSpeechSuccess = (speechType) => {
+  const onSpeechSuccess = useCallback((speechType) => {
     console.log("Speech success!!:", speechType)
     switch (speechType) {
       case "answer":
         send({ type: "ANSWER_SPEAK_SUCCESS" })
         break
     }
-  }
+  }, [])
 
-  const onSpeechMessageAdded = (messageType) => {
+  const onSpeechMessageAdded = useCallback((messageType) => {
     switch (messageType) {
       case "announcement":
         break
@@ -205,9 +220,9 @@ const AnnouncementPage = () => {
         send({ type: "PROCESSING_SUCCESS" })
         break
     }
-  }
+  }, [])
 
-  const canSpeechPassCheck = (speechType: string) => {
+  const canSpeechPassCheck = useCallback((speechType: string) => {
     switch (speechType) {
       case "announcement":
         return true
@@ -219,7 +234,7 @@ const AnnouncementPage = () => {
     }
 
     return true
-  }
+  }, [])
 
   useEffect(() => {
 
@@ -227,8 +242,11 @@ const AnnouncementPage = () => {
 
     return () => {
       Object.values(socketList).forEach((socketId) => socket.off(socketId))
+      socket.disconnect?.()
 
-
+      if (stopSpeechTimeout.current) {
+        clearTimeout(stopSpeechTimeout.current)
+      }
     }
   }, [])
 
@@ -238,6 +256,7 @@ const AnnouncementPage = () => {
 
       <SpeechToTextComponent
         onTranscript={onTranscript}
+        onInterim={onInterim}
         onSpeechRecognizerAdded={onSpeechRecognizerAdded}
       />
       <SpeechComponent
@@ -250,7 +269,7 @@ const AnnouncementPage = () => {
         onFaceLeave={handleFaceLeave}
       />
       {(state.matches("listening") || state.matches("userTalking")) &&
-        <ListeningComponent text={state.context.message} />
+        <ListeningComponent text={currentText} />
       }
 
       {(state.matches("processing") || state.matches("sending")) &&

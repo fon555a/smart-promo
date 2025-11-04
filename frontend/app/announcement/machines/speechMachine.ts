@@ -55,6 +55,7 @@ export const speechMachine = createMachine({
                         message: ({ event }) => event.text
                     })
                 },
+                CANCEL: "idle",
                 SEND_SPEAK_DATA: "sending",
 
             }
