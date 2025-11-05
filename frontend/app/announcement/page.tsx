@@ -50,6 +50,7 @@ const AnnouncementPage = () => {
   const searchParams = useSearchParams()
   const isKiosk = searchParams.get("kiosk")
   const hasWebcam = searchParams.get("webcam")
+  const isSpeechtest = searchParams.get("speechtest")
   const speechRef = useRef<SpeechRecognizer | null>(null)
   const currentTextRef = useRef<string>("")
   const stopSpeechTimeout = useRef<NodeJS.Timeout | null>(null)
@@ -143,8 +144,14 @@ const AnnouncementPage = () => {
         send({ type: "TIMEOUT" })
         console.log("ListeningTimeout")
       } else if (isStateMatch("userTalking")) {
-        send({ type: "CANCEL" })
-        // send({ type: "SEND_SPEAK_DATA" })
+
+        if (isSpeechtest) {
+          send({ type: "CANCEL" })
+
+        } else {
+          send({ type: "SEND_SPEAK_DATA" })
+
+        }
         console.log("Send speak data.")
       }
 
