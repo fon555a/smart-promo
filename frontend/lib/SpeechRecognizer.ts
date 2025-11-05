@@ -114,6 +114,15 @@ export class SpeechRecognizer {
       console.error("Speech error:", event.error);
     };
 
+    this.recognition.onend = async () => {
+      console.log("Speech is ending")
+
+      if (this.isListening) {
+        console.log("Start from on end")
+        await this.start(true)
+      }
+    }
+
     // this.recognition.onend = async () => {
     //   console.log("End!!")
     //   if (this.isListening) await this.restart(); // จบ session -> restart ใหม่

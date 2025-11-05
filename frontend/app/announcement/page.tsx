@@ -49,6 +49,7 @@ const AnnouncementPage = () => {
 
   const searchParams = useSearchParams()
   const isKiosk = searchParams.get("kiosk")
+  const hasWebcam = searchParams.get("webcam")
   const speechRef = useRef<SpeechRecognizer | null>(null)
   const currentTextRef = useRef<string>("")
   const stopSpeechTimeout = useRef<NodeJS.Timeout | null>(null)
@@ -142,8 +143,8 @@ const AnnouncementPage = () => {
         send({ type: "TIMEOUT" })
         console.log("ListeningTimeout")
       } else if (isStateMatch("userTalking")) {
-        // send({ type: "CANCEL" })
-        send({ type: "SEND_SPEAK_DATA" })
+        send({ type: "CANCEL" })
+        // send({ type: "SEND_SPEAK_DATA" })
         console.log("Send speak data.")
       }
 
@@ -166,7 +167,8 @@ const AnnouncementPage = () => {
         console.log("Start from page!!")
         speechRef.current?.start()
       }
-      resetStopSpeechTimeout()
+      // resetStopSpeechTimeout()
+      clearStopSpeechTimeout()
       // console.log("Face enter")
     }
   }, [])
@@ -309,8 +311,10 @@ const AnnouncementPage = () => {
       {(!state.matches("announcementSpeaking")) &&
         <div>
           <QRCodeComponent url={qrcodeLink} />
+          {hasWebcam &&
+            <WebCamComponent />
 
-          <WebCamComponent />
+          }
           <GuideComponent />
         </div>
 
