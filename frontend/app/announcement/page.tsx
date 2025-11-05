@@ -211,6 +211,7 @@ const AnnouncementPage = () => {
   }, [])
 
   const onInterim = useCallback((text: string) => {
+    send({ type: "START_TALKING" })
     if (isStateMatch("userTalking") || isStateMatch("listening")) {
       resetStopSpeechTimeout()
       console.log("Reset timeout")
