@@ -29,7 +29,9 @@ const upload = multer({ storage });
 
 router.use("/uploads", express.static(uploadPath))
 
-router.post("/add_announcement", upload.array("images"), addAnnouncement)
+router.post("/add_announcement", upload.array("images"), async (request, response) => {
+    await addAnnouncement(request, response)
+})
 
 router.post("/ask_announcement", askAnnouncement)
 

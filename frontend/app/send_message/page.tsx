@@ -28,6 +28,8 @@ const SendMessagePage = () => {
   })
 
   const startTimeRef = useRef<Dayjs>(null)
+  const isSendingRef = useRef(false)
+
 
   const isSameImage = (image: File, targetImage: File) => {
     return image.name === targetImage.name && image.size === targetImage.size && image.lastModified === targetImage.lastModified
@@ -81,14 +83,13 @@ const SendMessagePage = () => {
         }
       })
 
-
       if (response.status !== 200) {
         console.log("⚠️ มีบางอย่างผิดปกติ", response.status);
         return false
       }
 
       console.log("✅ สำเร็จ", response.data);
-      return true
+      return response.data
     } catch (error) {
       console.error(error)
     }
@@ -144,15 +145,34 @@ const SendMessagePage = () => {
 
 
               try {
-                const isSuccess = await sentDataToServer()
+                if (isSendingRef.current) {
+                  toast.error("กรุณารอสักครู่")
+                  return false
+                }
+                isSendingRef.current = true
+                const responseData = await sentDataToServer()
 
-                if (!isSuccess) {
+                setTimeout(() => {
+                  isSendingRef.current = false
+                }, 2000)
+                if (!responseData) {
                   console.log("Sent message error!!")
                   toast.error("ไม่สำเร็จ!!!")
 
                   return false
                 }
-                toast.success("สำเร็จ!!!")
+
+                if (!responseData.success) {
+                  if (responseData.isNotAnnouncement) {
+                    toast.error("กรุณาป้อนข้อความใหม่ นี่ไม่ใช่ข้อความประกาศประชาสัมพันธ์")
+                    return false
+                  }
+                  toast.error("ไม่สำเร็จ!!!")
+                  return false
+                }
+
+                toast.success("ส่งข้อมูลสำเร็จ")
+
                 setStep(4)
 
               } catch (error) {

@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 
-import { generateText } from "../services/aiService";
+import { generateSteamingText, generateText } from "../services/aiService";
 import { sentSpeechMessageToClient, SpeechConfig } from "./ttsController";
 import { AnnouncementData, startAnnouncement } from "../services/announcementService";
 import { AnnouncementDatabaseData, getAllAnnouncements, getAllTodayAnnouncements, getStartedAnnouncementsData } from "../services/announcementDatabaseService";
@@ -19,19 +19,67 @@ export const addAnnouncement = async (request: Request, response: Response) => {
     const announcementData: AnnouncementData = JSON.parse(request.body.data)
     announcementData.imageFiles = imageFiles as any
 
-    const isSuccess = await startAnnouncement(announcementData)
+    const text: string = announcementData.text
 
-    if (!isSuccess) {
+    const isAnnouncement = await isAnnouncementText("ประกาศ " + text)
+
+    if (!isAnnouncement) {
+        console.error("This is not an announcement text")
+        response.status(200).json({ success: false, error: "this is not announcement text", isNotAnnouncement: true })
+
+        return false
+    }
+
+    const maskedAnnouncementData = await startAnnouncement(announcementData)
+
+    if (!maskedAnnouncementData) {
         response.status(500).json({ success: false, error: "database error" })
         return false
     }
-    response.status(200).json({ success: true })
+
+    console.log("Masked announcement:", maskedAnnouncementData)
+    response.status(200).json({ success: true, data: maskedAnnouncementData })
     return true
 }
 
 export const getStartedAnnouncement = async (request: Request, response: Response) => {
     const allAnnouncement = await getStartedAnnouncementsData()
     response.status(200).json(allAnnouncement)
+}
+
+export const isAnnouncementText = async (text: string) => {
+    const generatedText: string = await generateText({
+        prompt: text,
+        systemPrompt: `You are a strict content filter. Your job is to determine if a user-submitted message is a **public announcement** without any offensive language. 
+
+Definitions:
+- A **public announcement** is any message that contains official, informative content meant for public awareness or notification. It typically includes words like "announcement," "notice," "inform," "important," or similar formal phrases.
+- Offensive language includes any profanity, insults, or vulgar words.
+
+Instructions:
+- If the message is a public announcement AND contains no offensive language, respond with only: true
+- Otherwise, respond with only: false
+- Do NOT provide any explanations, context, or additional text.
+
+Example:
+Input: "Important announcement: The office will be closed tomorrow."
+Output: true
+
+Input: "Hey dude, what's up?"
+Output: false`
+    })
+
+    console.log("Generate text:", generatedText)
+
+    if (!generatedText) {
+        console.error("Cannot get generate text")
+        return false
+    }
+
+    const isAnnouncement = generatedText.includes("true")
+
+    if (isAnnouncement) return true
+    return false
 }
 
 const buildAnnouncementsTimes = (allAnnouncementData: AnnouncementDatabaseData[]): { [k: string]: AnnouncementDatabaseData[] } => {
@@ -92,7 +140,7 @@ export const askAnnouncement = async (request: Request, response: Response) => {
     const prompt = "ข้อมูลประชาสัมพันธ์ทั้งหมด: " + jsonData + " " + data.text
 
     console.log("Prompt:", prompt)
-    await generateText(prompt, (renderedMessage: string) => {
+    await generateSteamingText(prompt, (renderedMessage: string) => {
         console.log("Rendered message:", renderedMessage)
         sentSpeechMessageToClient(speechContextList.answerSpeech, renderedMessage)
     })

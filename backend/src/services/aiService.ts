@@ -1,5 +1,56 @@
 import "dotenv/config";
 
+type GenerateTextConfig = {
+    prompt: string,
+    systemPrompt: string | undefined,
+}
+
+export const generateText = async (config: GenerateTextConfig): Promise<string> => {
+    
+    const url = "https://openrouter.ai/api/v1/chat/completions";
+    const headers = {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json"
+    };
+
+    const messages = []
+
+    if (config.systemPrompt) {
+        messages.push({
+            role: "system",
+            content: config.systemPrompt
+        })
+    }
+
+    messages.push({
+        role: "user",
+        content: config.prompt
+    })
+
+    console.log("Messages:", messages)
+
+    const payload = {
+        model: "openai/gpt-4o-mini",
+        messages: messages
+    };
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json()
+    console.log("Data:", data)
+    const message: string = data.choices[0].message.content
+    
+    return message
+}
+
 /**
  * The function `generateText` sends a prompt to an API endpoint, processes the response data, and
  * renders the generated text messages using a provided callback function.
@@ -12,8 +63,7 @@ import "dotenv/config";
  * the user interface. Each time a new message is generated, it should be passed to this callback
  * function for rendering on the screen.
  */
-
-export const generateText = async (
+export const generateSteamingText = async (
     prompt: string,
     onMessageRender: (message: string) => void
 ) => {

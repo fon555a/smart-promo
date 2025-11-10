@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import utc from "dayjs/plugin/utc"
 import timezone from "dayjs/plugin/timezone"
 import { MobileDateTimePicker } from '@mui/x-date-pickers/MobileDateTimePicker';
+import { useCallback, useRef, useState } from 'react';
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -21,6 +22,21 @@ interface Props {
 }
 
 const SendSetting = ({ onNext, onBack, onStartDateChange, dateData }: Props) => {
+  const isSendingRef = useRef(false)
+  const [sending, setSending] = useState(false)
+
+  const onNextButtonClicked = useCallback(() => {
+    if (isSendingRef.current) return false
+    isSendingRef.current = true
+    setSending(true)
+
+    onNext()
+    setTimeout(() => {
+      setSending(false)
+      isSendingRef.current = false
+
+    }, 3000)
+  }, [])
   return (
     <div>
 
@@ -40,14 +56,14 @@ const SendSetting = ({ onNext, onBack, onStartDateChange, dateData }: Props) => 
                 value={dateData.startDateAndTime}
                 views={["year", "month", "day", "hours", "minutes", "seconds"]}
                 minutesStep={1}
-                
+
                 onChange={onStartDateChange}
                 // defaultValue={}
                 minDateTime={dayjs()}
                 ampm={false}
-                
+
               />
- 
+
             </LocalizationProvider>
             {/* End DatePicker */}
           </div>
@@ -57,7 +73,13 @@ const SendSetting = ({ onNext, onBack, onStartDateChange, dateData }: Props) => 
       </div>
       <div className="flex justify-between">
         <button className="cursor-pointer bg-primary text-white px-5 py-1 rounded-md" onClick={onBack}>ย้อนกลับ</button>
-        <button className="cursor-pointer bg-primary text-white px-5 py-1 rounded-md" onClick={onNext}>เริ่มประกาศ</button>
+        {sending ? 
+          <button className="bg-[#64696C] text-white px-5 py-1 rounded-md">กำลังประกาศ</button>
+        :
+          <button className="cursor-pointer bg-primary text-white px-5 py-1 rounded-md" onClick={onNextButtonClicked}>เริ่มกระกาศ</button>
+
+      }
+        {/* <button className="cursor-pointer bg-primary text-white px-5 py-1 rounded-md" onClick={onNextButtonClicked}>{sending ? "กำลังประกาศ" : "เริ่มกระกาศ"}</button> */}
       </div>
     </div>
   )
